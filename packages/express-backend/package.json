@@ -1,0 +1,20 @@
+{
+  "name": "express-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "backend.js",
+  "scripts": {
+    "dev": "npx nodemon backend.js",
+    "start": "node backend.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8"
+  },
+  "dependencies": {
+    "mongoose": "^8.19.2"
+  }
+}
