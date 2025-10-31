@@ -4,9 +4,9 @@
 
 # To run the website:
 - Open a terminal and cd into "express-backend" folder
-- run: npx nodemon backend.js
+- run: `npx nodemon backend.js`
 - Open another terminal and cd into "react-frontend" folder
-- run npm run dev
+- run `npm run dev`
 
 * Run **formatter** before pushing: `npm run format`
 * Run **linter**: `npm run lint` 
