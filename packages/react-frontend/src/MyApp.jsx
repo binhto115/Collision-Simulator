@@ -1,7 +1,23 @@
 // src/MyApp.jsx
-import Table from "./Table";
-import Form from "./Form";
 import React, {useState, useEffect} from "react";
+import Table from "./Components/Table";
+import Form from "./Components/Form";
+import LoginForm from './LoginPage/LoginForm'
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+
+// Dashboard Page (Form + Table)
+function DashBoard({ characters, removeOneCharacter, updateList}) {
+    return (
+        <div className="container">
+            <Table 
+            characterData={characters}
+            removeCharacter={removeOneCharacter}
+            />
+        
+            <Form handleSubmit={updateList}/>
+        </div>
+    );
+}
 
 function MyApp() {
     const [characters, setCharacters] = useState([]);
@@ -67,15 +83,23 @@ function MyApp() {
     return promise;
     }
 
+    // --- Render the routes ---
     return (
-    <div className="container">
-        <Table 
-        characterData={characters}
-        removeCharacter={removeOneCharacter}
-        />
-    
-        <Form handleSubmit={updateList}/>
-    </div>
+        <BrowserRouter>
+        <Routes>
+            <Route path="/" element={<LoginForm />} />
+            <Route
+            path="/dashboard"
+            element={
+                <DashBoard
+                characters={characters}
+                removeOneCharacter={removeOneCharacter}
+                updateList={updateList}
+                />
+            }
+            />
+        </Routes>
+        </BrowserRouter>
     );
 }
 
