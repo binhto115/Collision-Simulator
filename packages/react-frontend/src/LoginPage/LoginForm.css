@@ -39,6 +39,11 @@ code {
     color: #fff;
 }
 
+.login-page h3 {
+    text-align: center;
+    color: #292323;
+}
+
 .login-page .input-box {
     position: relative;
     width: 100%;

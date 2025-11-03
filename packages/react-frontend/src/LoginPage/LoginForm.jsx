@@ -42,7 +42,8 @@ const LoginForm = () => {
                 <button type="submit">Login</button>
 
                 <div className='register-link'>
-                    <p>Don't have an account? <a onClick={() => navigate("/signup")}>Sign Up</a></p>
+                    <p>Don't have an account?{" "}
+                        <a onClick={() => navigate("/signup")}>Sign Up</a></p>
                 </div>
             </form>
         </div>
