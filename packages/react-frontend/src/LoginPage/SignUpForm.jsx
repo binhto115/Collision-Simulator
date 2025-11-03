@@ -10,7 +10,7 @@ const SignUpForm = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -18,9 +18,28 @@ const SignUpForm = () => {
       return;
     }
 
-    // TODO, for now it just shows a message
-    alert(`Account created for ${username}!`);
-    navigate("/");
+    const newUser = { username: username, password: password };
+
+    try {
+      // POST request for username & password
+      const res = await fetch("http://localhost:8000/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      });
+
+      if (res.status === 201) {
+        alert("Account created successfully!");
+        navigate("/"); // back to login
+      } else if (res.status === 409) {
+        alert("Username already exists!");
+      } else {
+        alert("Failed to create account. Please try again.");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("Error connecting to server.");
+    }
   };
 
   return (
