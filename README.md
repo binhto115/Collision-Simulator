@@ -5,7 +5,9 @@
 # To run the website:
 - Open a terminal and cd into "express-backend" folder
 - run: `npx nodemon backend.js`
-- Open another terminal and cd into "react-frontend" folder
+- Open another terminal and cd into "react-frontend" folder:
+- npm install
+- npm install react-icons
 - run `npm run dev`
 
 * Run **formatter** before pushing: `npm run format`
