@@ -39,6 +39,11 @@ code {
     color: #fff;
 }
 
+.login-page h3 {
+    text-align: center;
+    color: #292323;
+}
+
 .login-page .input-box {
     position: relative;
     width: 100%;
@@ -136,6 +141,8 @@ code {
 
 .register-link p a:hover {
     text-decoration: underline;
+    cursor: pointer;
+    color: #007bff;
 }
 
 .login-page input[type="text"],

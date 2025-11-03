@@ -24,14 +24,17 @@ const LoginForm = () => {
         <div className="login-page">
             <form onSubmit={handleSubmit}>
                 <h2>CrashLab 2D</h2>
+
                 <div className="input-box">
                     <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)}/>
                     <FaUser className='icon'/>
                 </div>
+
                 <div className='input-box'>
                     <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}/>
                     <FaLock className='icon'/>
                 </div>
+
                 <div className='remember-forgot'>
                     <label><input type="checkbox" />Remember me</label>
                     <a href="#">Forgot password?</a>
@@ -39,7 +42,8 @@ const LoginForm = () => {
                 <button type="submit">Login</button>
 
                 <div className='register-link'>
-                    <p>Dont' have an account? <a href="#">Sign Up</a></p>
+                    <p>Don't have an account?{" "}
+                        <a onClick={() => navigate("/signup")}>Sign Up</a></p>
                 </div>
             </form>
         </div>

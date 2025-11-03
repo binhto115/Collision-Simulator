@@ -9,14 +9,14 @@
 import express from "express";
 import cors from "cors";
 import userService from "../../csc-307-db/models/user-services.js";
-
+import accountsRouter from "./accounts.js";
 
 const app = express();
 const port = 8000;
 
 app.use(cors());
 app.use(express.json());
-
+app.use("/accounts", accountsRouter);
 
 app.listen(port, () => {
     console.log(
