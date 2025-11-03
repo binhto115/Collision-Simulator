@@ -14,6 +14,10 @@
 * Run **linter**: `npm run lint` 
 * Keep PRs small; simple messages like `feat: add table` / `fix: delete bug`
 
+# To use Unix Shell for MongoDB testing:
+- run: $ mongosh "mongodb+srv://crashlab-2d-simulation.1keaslo.mongodb.net/" --apiVersion 1 --username <atlas_username>
+- login password is the password for the atlas_username, not the atlas account.
+
 ### Code style
 
 * **Prettier** formats everything (semicolons on, 2 spaces, width 100)
