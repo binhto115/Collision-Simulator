@@ -2,10 +2,11 @@
 import React, {useState, useEffect} from "react";
 import Table from "./Components/Table";
 import Form from "./Components/Form";
-import LoginForm from './LoginPage/LoginForm'
+import LoginForm from './LoginPage/LoginForm';
+import SignUpForm from "./LoginPage/SignUpForm";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 
-// Dashboard Page (Form + Table)
+// Dashboard Page (Form.jsx + Table.jsx)
 function DashBoard({ characters, removeOneCharacter, updateList}) {
     return (
         <div className="container">
@@ -86,19 +87,22 @@ function MyApp() {
     // --- Render the routes ---
     return (
         <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<LoginForm />} />
-            <Route
-            path="/dashboard"
-            element={
-                <DashBoard
-                characters={characters}
-                removeOneCharacter={removeOneCharacter}
-                updateList={updateList}
+            <Routes>
+                <Route path="/" element={<LoginForm />} />
+
+                <Route path="/signup" element={<SignUpForm />} />
+
+                <Route
+                path="/dashboard"
+                element={
+                    <DashBoard
+                    characters={characters}
+                    removeOneCharacter={removeOneCharacter}
+                    updateList={updateList}
+                    />
+                }
                 />
-            }
-            />
-        </Routes>
+            </Routes>
         </BrowserRouter>
     );
 }
