@@ -56,7 +56,7 @@ const LoginForm = () => {
 
                 <div className='remember-forgot'>
                     <label><input type="checkbox" />Remember me</label>
-                    <a href="#">Forgot password?</a>
+                    <a href="https://neal.fun/password-game/">Forgot password? </a>
                 </div>
                 <button type="submit">Login</button>
 
