@@ -49,7 +49,7 @@ router.post("/login", async (req, res) => {
     // No logic added for mongoose yet
     try {
         // Find user in MongoDB
-        const account = await req.app.locals.db.collection("accounts").findOne({ username });
+        const account = await Account.findOne({ username });
 
         // Account DNE
         if (!account) {
