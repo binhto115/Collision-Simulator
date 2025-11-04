@@ -5,7 +5,7 @@ import Account from "./models/account-model.js";
 
 const router = express.Router();
 
-// POST /accounts colleciton - create a new account
+// POST /accounts collection - create a new account
 router.post("/", async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -30,6 +30,37 @@ router.post("/", async (req, res) => {
     catch (err) {
         console.error("❌ Error creating account:", err);
         return res.status(500).json({ message: "Internal server error." });
+    }
+});
+
+// POST /accounts collection - confirm user exists
+router.post("/", async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ message: "Username and password required." });
+    }
+
+    try {
+        // Find user in MongoDB
+        const account = await req.app.locals.db.collection("accounts").findOne({ username });
+
+        // Account DNE
+        if (!account) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // DB password not same as input password
+        if (account.password !== password) {
+            return res.status(401).json({ message: "Invalid password." });
+        }
+
+        // Successful
+        res.status(200).json({ message: "Login successful!" });
+    }
+    catch (error) {
+        console.error("Error during login:", error);
+        res.status(500).json({ message: "Internal server error." });
     }
 });
 
