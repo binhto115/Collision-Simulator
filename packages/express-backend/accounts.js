@@ -5,7 +5,7 @@ import Account from "./models/account-model.js";
 const router = express.Router();
 
 // POST /accounts colleciton - create a new account
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -14,17 +14,17 @@ router.post("/", (req, res) => {
         }
 
         // Check if username already exists
-        const existing = accounts.find((acc) => acc.username === username);
+        const existing = await Account.findOne({ username });
         if (existing) {
             return res.status(409).json({ message: "Username already exists." });
         }
 
         // Save new account
         const newAccount = { username, password };
-        accounts.push(newAccount);
+        await newAccount.save();
 
-        console.log("New account created:", newAccount);
-        return res.status(201).json({ message: "Account created successfully!" });
+        console.log("✅ New account created:", newAccount);
+        return res.status(201).json({ message: "Account created successfully!" });;
     }
     catch (err) {
         console.error("❌ Error creating account:", err);
@@ -32,8 +32,9 @@ router.post("/", (req, res) => {
     }
 });
 
-// GET /accounts - (optional) view all accounts for debugging
-router.get("/", (req, res) => {
+// GET /accounts - view all accounts (debugging)
+router.get("/", async (req, res) => {
+    const accounts = await Account.find();
     res.json(accounts);
 });
 
