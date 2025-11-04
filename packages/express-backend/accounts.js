@@ -34,13 +34,19 @@ router.post("/", async (req, res) => {
 });
 
 // POST /accounts collection - confirm user exists
-router.post("/", async (req, res) => {
+router.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
         return res.status(400).json({ message: "Username and password required." });
     }
 
+    if (username === "admin" && password === "1234") {
+        console.log("Admin login successful");
+        return res.status(200).json({ message: "Admin login successful", admin: true });
+    }
+
+    // No logic added for mongoose yet
     try {
         // Find user in MongoDB
         const account = await req.app.locals.db.collection("accounts").findOne({ username });
@@ -56,7 +62,7 @@ router.post("/", async (req, res) => {
         }
 
         // Successful
-        res.status(200).json({ message: "Login successful!" });
+        return res.status(200).json({ message: "Login successful!", admin: false });
     }
     catch (error) {
         console.error("Error during login:", error);
