@@ -8,7 +8,7 @@
 // mongosh
 import express from "express";
 import cors from "cors";
-import userService from "../../csc-307-db/models/user-services.js";
+import userService from "./models/user-services.js";
 import accountsRouter from "./accounts.js";
 
 const app = express();
