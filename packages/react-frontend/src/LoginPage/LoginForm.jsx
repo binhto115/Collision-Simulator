@@ -10,13 +10,32 @@ const LoginForm = () => {
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (username === "admin" && password === "1234") {
-            navigate("/dashboard");
-        } else {
-            alert("Invalid credentials");
+        try {
+            const response = await fetch("http://localhost:8000/accounts/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+
+            // If login is good (either by admin or user)
+            if (response.ok) {
+                alert(data.message);
+                navigate("/dashboard");
+            }
+            else {
+                alert(data.message || "Login failed");
+            }
+        }
+        catch (error) {
+            console.error("Error:", error);
+            alert("An error occured while logging in.");
         }
     };
 
@@ -37,7 +56,7 @@ const LoginForm = () => {
 
                 <div className='remember-forgot'>
                     <label><input type="checkbox" />Remember me</label>
-                    <a href="#">Forgot password?</a>
+                    <a href="https://neal.fun/password-game/">Forgot password? </a>
                 </div>
                 <button type="submit">Login</button>
 
