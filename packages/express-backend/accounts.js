@@ -1,5 +1,6 @@
 // accounts.js
 import express from "express";
+import "./models/user-services.js";
 import Account from "./models/account-model.js";
 
 const router = express.Router();
@@ -19,7 +20,7 @@ router.post("/", async (req, res) => {
             return res.status(409).json({ message: "Username already exists." });
         }
 
-        // Save new account
+        // Save to MongoDB
         const newAccount = new Account({ username, password });
         await newAccount.save();
 
@@ -34,7 +35,7 @@ router.post("/", async (req, res) => {
 
 // GET /accounts - view all accounts (debugging)
 router.get("/", async (req, res) => {
-    const accounts = await Account.find();
+    const accounts = await Account.find({});
     res.json(accounts);
 });
 
