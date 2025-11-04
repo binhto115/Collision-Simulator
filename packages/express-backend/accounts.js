@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
         }
 
         // Save new account
-        const newAccount = { username, password };
+        const newAccount = new Account({ username, password });
         await newAccount.save();
 
         console.log("✅ New account created:", newAccount);
