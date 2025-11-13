@@ -1,0 +1,31 @@
+.sim-root {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  height: calc(100vh - 64px);
+  padding: 12px;
+  box-sizing: border-box;
+}
+.sim-left {
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(6px);
+}
+.sim-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+}
+.sim-canvas {
+  width: 100%;
+  max-height: calc(100vh - 140px);
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fffbe6;
+}
+.sim-left input,
+.sim-left select,
+.sim-left textarea { max-width: 100%; }
