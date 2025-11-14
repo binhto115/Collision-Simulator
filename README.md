@@ -1,51 +1,50 @@
-Collision-Simulator
-Contributing
-To run the website:
+# Collision-Simulator
 
-Open a terminal and cd into packages/express-backend
+## Contributing
 
-run: npx nodemon backend.js
+### To run the website
 
-Open another terminal and cd into packages/react-frontend
+* Open a terminal and **cd** into `packages/express-backend`
+* Run: `npx nodemon backend.js`
+* Open another terminal and **cd** into `packages/react-frontend`
+* `npm install`
+* `npm install react-icons`
+* Run: `npm run dev`
 
-npm install
+**Before pushing**
 
-npm install react-icons
+* Run **formatter**: `npm run format`
+* Run **linter**: `npm run lint`
+* Keep PRs small; use messages like `feat: add table` / `fix: delete bug`
 
-run npm run dev
+### To use Unix Shell for MongoDB testing
 
-Run formatter before pushing: npm run format
+* Run:
+  `mongosh "mongodb+srv://crashlab-2d-simulation.1keaslo.mongodb.net/" --apiVersion 1 --username <atlas_username>`
+* Password is for the **atlas_username**, not the Atlas account.
 
-Run linter: npm run lint
+---
 
-Keep PRs small; simple messages like feat: add table / fix: delete bug
+## Code style
 
-To use Unix Shell for MongoDB testing:
+* **Prettier** formats everything (semicolons on, 2 spaces, width 100)
+* **ESLint** for basic JS/React rules
 
-run:
-mongosh "mongodb+srv://crashlab-2d-simulation.1keaslo.mongodb.net/" --apiVersion 1 --username <atlas_username>
+### VS Code setup
 
-login password is the password for the atlas_username, not the atlas account.
+1. Install extensions: **Prettier – Code formatter**, **ESLint**
+2. Settings → enable **Format on Save**
+3. Set default formatter to **Prettier**
 
-Code style
+Optional workspace settings (`.vscode/settings.json`):
 
-Prettier formats everything (semicolons on, 2 spaces, width 100)
-
-ESLint for basic JS/React rules
-
-VS Code setup
-
-Install extensions: Prettier – Code formatter, ESLint
-
-Settings → enable Format on Save
-
-Set default formatter to Prettier
-
-Optional workspace settings (.vscode/settings.json):
-
+```json
 { "editor.formatOnSave": true, "editor.defaultFormatter": "esben.prettier-vscode" }
+```
 
-Scripts (once package.json is added)
+### Scripts (once `package.json` is added)
+
+```json
 {
   "scripts": {
     "format": "prettier --write .",
@@ -53,32 +52,31 @@ Scripts (once package.json is added)
     "lint": "eslint ."
   }
 }
+```
 
-Access Control (Assignment Deliverables)
-Overview
+---
 
-Backend (Express + MongoDB) exposes:
+## Access Control (Assignment Deliverables)
 
-POST /signup → register user, hash password (bcrypt), return JWT
+### Overview
 
-POST /login → verify password, return JWT
+* **Backend** (Express + MongoDB) exposes:
 
-GET /users → protected, requires Authorization: Bearer <token>
+  * `POST /signup` → register user, hash password (bcrypt), return JWT
+  * `POST /login` → verify password, return JWT
+  * `GET /users` → **protected**, requires `Authorization: Bearer <token>`
+* **Frontend** (React):
 
-Frontend (React):
+  * On successful signup/login, store JWT in `localStorage` as `auth_token`
+  * All protected fetches add `Authorization` header from `localStorage`
+* **Env**:
+  `TOKEN_SECRET` (JWT secret), `MONGO_URI` (Mongo connection string)
 
-On successful signup/login, store JWT in localStorage under auth_token
+### Sequence Diagrams
 
-All protected fetches add Authorization header from localStorage
+#### Sign-Up
 
-Env:
-
-TOKEN_SECRET for JWT
-
-MONGO_URI connection string
-
-Sequence Diagrams
-Sign-Up
+```mermaid
 sequenceDiagram
   autonumber
   actor User
@@ -94,8 +92,11 @@ sequenceDiagram
   BE-->>FE: 201 {token}
   FE->>FE: localStorage.setItem('auth_token', token)
   FE-->>User: Signed up (authenticated)
+```
 
-Sign-In
+#### Sign-In
+
+```mermaid
 sequenceDiagram
   autonumber
   actor User
@@ -115,8 +116,11 @@ sequenceDiagram
   else mismatch
     BE-->>FE: 401 Unauthorized
   end
+```
 
-Protected API Call
+#### Protected API Call
+
+```mermaid
 sequenceDiagram
   autonumber
   participant FE as Frontend (React)
@@ -134,54 +138,67 @@ sequenceDiagram
   else invalid/missing
     MW-->>FE: 401 Unauthorized
   end
+```
 
-Backend Endpoints
-Method	Path	Auth?	Body	Response
-POST	/signup	No	{ "username", "pwd" }	201 { "token": "<jwt>" }
-POST	/login	No	{ "username", "pwd" }	200 { "token": "<jwt>" }
-GET	/users	Yes	—	200 { "users_list": [...] }
+---
 
-CORS dev setup: FE at http://localhost:5173, BE at http://localhost:8000.
+## Backend Endpoints
 
-Frontend Notes
+| Method | Path      | Auth? | Body                   | Response                      |
+| -----: | --------- | :---: | ---------------------- | ----------------------------- |
+|   POST | `/signup` |   No  | `{ "username","pwd" }` | `201 { "token": "<jwt>" }`    |
+|   POST | `/login`  |   No  | `{ "username","pwd" }` | `200 { "token": "<jwt>" }`    |
+|    GET | `/users`  |  Yes  | —                      | `200 { "users_list": [...] }` |
 
-JWT is stored in localStorage under auth_token
+**CORS dev setup:** FE at `http://localhost:5173`, BE at `http://localhost:8000`.
 
-All protected requests include:
+---
 
+## Frontend Notes
+
+JWT is stored in `localStorage` under `auth_token`.
+Protected requests include:
+
+```js
 fetch("http://localhost:8000/users", {
   headers: { Authorization: `Bearer ${localStorage.getItem("auth_token")}` }
 });
+```
 
-Quick Test (curl)
+---
 
-Unauth check:
+## Quick Test (curl)
 
+1. Unauth check
+
+```bash
 curl -i http://localhost:8000/users
 # Expect: 401 Unauthorized
+```
 
+2. Sign up
 
-Sign up:
-
+```bash
 curl -i -X POST http://localhost:8000/signup \
   -H "Content-Type: application/json" \
   -d '{"username":"patrick","pwd":"test123"}'
-# Copy the "token" from the response
+# Copy the "token" field from the response
+```
 
+3. Authenticated call
 
-Authenticated call:
-
+```bash
 TOKEN="<paste the token here>"
 curl -i http://localhost:8000/users \
   -H "Authorization: Bearer $TOKEN"
 # Expect: 200 with { users_list: [...] }
+```
 
-Troubleshooting
+---
 
-401 on protected routes: check that Authorization: Bearer <token> is present and token is fresh.
+## Troubleshooting
 
-CORS errors: backend must allow origin http://localhost:5173 and Authorization header.
-
-Mongo auth error: verify MONGO_URI user/password and database name in .env.
-
-Mermaid not rendering on GitHub: ensure each diagram is in its own fenced block starting with ```mermaid and no extra text inside the fence.
+* **401 on protected routes** → Ensure `Authorization: Bearer <token>` is present and token isn’t expired.
+* **CORS errors** → Backend must allow origin `http://localhost:5173` and header `Authorization`.
+* **Mongo auth error** → Verify `MONGO_URI` username/password and DB name in `.env`.
+* **Mermaid not rendering on GitHub** → Each diagram must be in its **own** fenced block starting with ```mermaid.
