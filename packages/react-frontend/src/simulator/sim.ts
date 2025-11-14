@@ -13,11 +13,11 @@ export interface SimConfig {
   e: number;
   reactionDelayS: number;
   ttcTriggerS: number;
-  leadDecel1: number;          // L1 的“恒定制动”指令（负值）
+  leadDecel1: number;          // constant braking command for L1 (negative m/s²)
   fps: number;
   durationS: number;
 
-  vE0: number; vL10: number; vL20: number;
+  vE0: number; vL10: number; vL20: number; // all in m/s
   gap1: number; gap2: number;
   cars: number;
   grade_deg: number;
@@ -65,13 +65,18 @@ export function applyCCRTemplate(cfg: SimConfig){
     cfg.vE0 = kph2mps(50); cfg.vL10 = kph2mps(50); cfg.vL20 = cfg.vL10;
     cfg.gap1 = [12,40][Math.floor(Math.random()*2)];
     cfg.gap2 = cfg.gap1 + 10;
-    cfg.leadDecel1 = [-2.0, -6.0][Math.floor(Math.random()*2)];
+    cfg.leadDecel1 = [-2.0, -6.0][Math.floor(Math.random()*2)]; // m/s² (negative)
   }
 }
 
 export function createInitialState(cfg:SimConfig): SimState {
   if (cfg.kind!=="Custom") applyCCRTemplate(cfg);
-  const phys = pickPhysParamsFromEnv(cfg.weather, cfg.surface, cfg.grade_deg, 1500, 0.65, cfg.airTempC, cfg.altitude_m, cfg.surfaceRoughness, cfg.headwind_mps, cfg.waterFilm_mm, cfg.tirePressure_psi, cfg.treadDepth_mm);
+  const phys = pickPhysParamsFromEnv(
+    cfg.weather, cfg.surface, cfg.grade_deg,
+    1500, 0.65, cfg.airTempC, cfg.altitude_m,
+    cfg.surfaceRoughness, cfg.headwind_mps, cfg.waterFilm_mm,
+    cfg.tirePressure_psi, cfg.treadDepth_mm
+  );
   if (cfg.muOverride!=null) phys.mu0 = cfg.muOverride;
 
   return {
@@ -100,41 +105,50 @@ function resolveImpact1D(uA:number,uB:number,mA:number,mB:number,e:number){
 }
 
 export function stepOnce(state:SimState, cfg:SimConfig){
-  const s = state, dt = s.dt;
+  const s = state, dt = s.dt; // dt in seconds
 
-  // 每辆车各自的物理参数（包含 CdA、m、μ、坡度、滚阻等）
+  // Per-vehicle physics params
   const pE:PhysParams  = { ...s.phys, m: cfg.mE,  CdA: cfg.CdAE };
   const p1:PhysParams  = { ...s.phys, m: cfg.m1,  CdA: cfg.CdA1 };
   const p2:PhysParams  = { ...s.phys, m: cfg.m2,  CdA: cfg.CdA2 };
 
-  // AEB 触发判定：使用“车长占位”的 TTC
+  // TTC / ego AEB (center-to-center minus half-lengths)
   const centerGap1 = s.x1 - s.xE;
   const centerGap2 = s.x2 - s.xE;
   let centerGapAhead = Infinity, relVAhead = 0, combLenAhead = 0;
   if (cfg.cars>=2){ centerGapAhead = centerGap1; relVAhead = s.vE - s.v1; combLenAhead = (s.lenE + s.len1)/2; }
   if (cfg.cars>=3 && centerGap2 < centerGapAhead){ centerGapAhead = centerGap2; relVAhead = s.vE - s.v2; combLenAhead = (s.lenE + s.len2)/2; }
   const TTC = relVAhead>0 ? ((centerGapAhead - combLenAhead)/relVAhead) : Infinity;
-  const brakeOnEgo = TTC < cfg.ttcTriggerS;
 
-  // ★ 统一用 stepLongitudinal 推进三辆车（之前 L1/L2 没有空气/滚阻，是不对的）
+  // ✅ respect reaction delay; avoid instant full brake at t=0
+  const brakeOnEgo = (s.t >= (cfg.reactionDelayS ?? 0)) && (TTC < cfg.ttcTriggerS);
+
+  // Ego with physics + AEB; ✅ clamp to non-negative velocity
   const stE = stepLongitudinal(s.vE, s.aE, dt, pE, brakeOnEgo);
-  s.vE = stE.vNext; s.aE = stE.aCmdNext;
+  s.vE = Math.max(0, stE.vNext);
+  s.aE = stE.aCmdNext;
 
-  const leadBraking = cfg.leadDecel1 < 0;
-  // 这里把 “恒定制动” 作为 aCmd 传入（stepLongitudinal 内会做 μ 限幅与合力计算）
-const st1 = stepLongitudinal(s.v1, cfg.leadDecel1, dt, { ...p1, jerk: 1e9, aebTargetG: Math.abs(cfg.leadDecel1)/9.81 }, true);
-  
-  s.v1 = st1.vNext;
+  // Lead behavior by CCR mode
+  if (cfg.kind === "CCRb" && cfg.leadDecel1 < 0) {
+    const st1 = stepLongitudinal(s.v1, cfg.leadDecel1, dt, p1, /*brakeOn=*/false);
+    s.v1 = Math.max(0, st1.vNext);           // ✅ no reverse for lead either
+  } else if (cfg.kind === "CCRs") {
+    s.v1 = 0;
+  } else {
+    s.v1 = cfg.vL10;                          // CCRm/custom constant speed (m/s)
+  }
 
-  const st2 = stepLongitudinal(s.v2, 0, dt, p2, false);
-  s.v2 = st2.vNext;
+  // Third vehicle: constant-speed for now
+  if (cfg.cars >= 3) {
+    s.v2 = Math.max(0, cfg.vL20);
+  }
 
-  // 积分位置
+  // Integrate positions (seconds)
   s.xE += s.vE * dt;
   s.x1 += s.v1 * dt;
   s.x2 += s.v2 * dt;
 
-  // 碰撞与分离（基于各自车长）
+  // Collision + 1D impact resolution
   const eps = 1e-3;
   let iter=0, changed=false;
   do{
@@ -144,7 +158,7 @@ const st1 = stepLongitudinal(s.v1, cfg.leadDecel1, dt, { ...p1, jerk: 1e9, aebTa
       if (gap12 <= 0){
         const uA=s.v1, uB=s.v2, e = estimateE(cfg.e, Math.max(0,uA-uB));
         const out = resolveImpact1D(uA,uB,cfg.m1,cfg.m2,e);
-        s.v1 = out.vA; s.v2 = out.vB;
+        s.v1 = Math.max(0, out.vA); s.v2 = Math.max(0, out.vB);  // ✅ no reverse after impact
         const mid = (s.x1 + s.x2)/2;
         const d  = (s.len1 + s.len2)/2 + eps;
         s.x1 = mid - d/2; s.x2 = mid + d/2;
@@ -157,7 +171,7 @@ const st1 = stepLongitudinal(s.v1, cfg.leadDecel1, dt, { ...p1, jerk: 1e9, aebTa
       if (gapE1 <= 0){
         const uA=s.vE, uB=s.v1, e = estimateE(cfg.e, Math.max(0,uA-uB));
         const out = resolveImpact1D(uA,uB,cfg.mE,cfg.m1,e);
-        s.vE = out.vA; s.v1 = out.vB;
+        s.vE = Math.max(0, out.vA); s.v1 = Math.max(0, out.vB);  // ✅ no reverse after impact
         const mid = (s.xE + s.x1)/2;
         const d  = (s.lenE + s.len1)/2 + eps;
         s.xE = mid - d/2; s.x1 = mid + d/2;
@@ -167,9 +181,13 @@ const st1 = stepLongitudinal(s.v1, cfg.leadDecel1, dt, { ...p1, jerk: 1e9, aebTa
     }
   } while(changed && ++iter<3);
 
+  // Optional: keep world non-negative so ego can’t slip under the left panel
+  s.xE = Math.max(0, s.xE);
+
   s.t += dt;
   return { TTC, brakeOn: brakeOnEgo };
 }
+
 
 function drawCarSprite(ctx:CanvasRenderingContext2D, x:number, y:number, w:number, isTruck:boolean, color:string){
   const h = isTruck ? 34 : 26;
@@ -235,7 +253,7 @@ export function drawFrame(ctx:CanvasRenderingContext2D, s:SimState, cfg:SimConfi
   if (cfg.cars>=3) drawCarSprite(ctx, worldXtoScreen(s.x2)-w2/2, carY, w2, isTruck2, "#7c828a");
 
   ctx.fillStyle = "#222"; ctx.font = "14px ui-monospace, SFMono-Regular, Menlo, monospace";
-  ctx.fillText(`t=${s.t.toFixed(2)}s  模板:${cfg.kind}  天气:${cfg.weather}  光照:${cfg.light}  collided=${s.collided}`, 12, 22);
+  ctx.fillText(`t=${s.t.toFixed(2)}s  template:${cfg.kind}  weather:${cfg.weather}  light:${cfg.light}  collided=${s.collided}`, 12, 22);
   ctx.fillText(`E len=${s.lenE.toFixed(2)}m v=${s.vE.toFixed(1)} m/s  m=${cfg.mE}kg  CdA=${cfg.CdAE.toFixed(2)}  zoom=${(cfg.zoom??1).toFixed(2)}x`, 12, 44);
   if (cfg.cars>=2) ctx.fillText(`L1 len=${s.len1.toFixed(2)}m v=${s.v1.toFixed(1)} m/s  m=${cfg.m1}kg  CdA=${cfg.CdA1.toFixed(2)}`, 12, 66);
   if (cfg.cars>=3) ctx.fillText(`L2 len=${s.len2.toFixed(2)}m v=${s.v2.toFixed(1)} m/s  m=${cfg.m2}kg  CdA=${cfg.CdA2.toFixed(2)}`, 12, 88);
