@@ -35,6 +35,7 @@ export default function MyApp() {
   function fetchUsers() {
     return fetch(`${BASE_URL}/users`);
   }
+
   function postUser(person) {
     return fetch(`${BASE_URL}/users`, {
       method: "POST",
@@ -42,6 +43,7 @@ export default function MyApp() {
       body: JSON.stringify(person),
     });
   }
+
   function deleteUser(id) {
     return fetch(`${BASE_URL}/users/${id}`, { method: "DELETE" });
   }
@@ -49,8 +51,15 @@ export default function MyApp() {
   // initial load
   useEffect(() => {
     fetchUsers()
-      .then((res) => res.json())
-      .then((json) => setCharacters(json["users_list"]))
+      .then((res) => res.status === 200 ? res.json() : undefined
+    )
+      .then((json) => {
+        if (json) {
+          setCharacters(json["users_list"]);
+        } else {
+          setCharacters(null);
+        }
+      })
       .catch((err) => console.log(err));
   }, []);
 
