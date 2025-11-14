@@ -76,7 +76,7 @@ Optional workspace settings (`.vscode/settings.json`):
 ### Sequence Diagrams (Image)
 Below is our access-control flow sketch (login, signup, protected calls).
 
-![Access control sequence/architecture sketch](docs/img/access-control-sequence.png "Access control flow: FE ⇄ BE ⇄ DB with JWT and protected endpoints")
+![Access control sequence/architecture sketch](docs/img/image.png "Access control flow: FE ⇄ BE ⇄ DB with JWT and protected endpoints")
 #### Sign-Up
 
 ```mermaid
