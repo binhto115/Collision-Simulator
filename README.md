@@ -47,4 +47,5 @@ Optional workspace settings (`.vscode/settings.json`):
 }
 ```
 <img width="2059" height="829" alt="image" src="https://github.com/user-attachments/assets/c83caa9b-38f6-48ec-a0cf-da3df89db2fb" />
-<img width="2059" height="829" alt="image" src="https://github.com/user-attachments/assets/05eae90c-ae80-4de5-9649-d9b2e0023e35" />
+<img width="2128" height="1174" alt="image" src="https://github.com/user-attachments/assets/814a0276-fcd3-415c-9628-3be7118a9cfb" />
+
