@@ -77,73 +77,7 @@ Optional workspace settings (`.vscode/settings.json`):
 Below is our access-control flow sketch (login, signup, protected calls).
 
 ![Access control sequence/architecture sketch](docs/img/image.png "Access control flow: FE ⇄ BE ⇄ DB with JWT and protected endpoints")
-#### Sign-Up
 
-```mermaid
-sequenceDiagram
-  autonumber
-  actor User
-  participant FE as Frontend (React)
-  participant BE as Backend (Express)
-  participant DB as DB (Mongo)
-  User->>FE: Enter username & pwd
-  FE->>BE: POST /signup {username, pwd}
-  BE->>BE: bcrypt.hash(pwd + salt)
-  BE->>DB: INSERT user {username, hashedPwd}
-  DB-->>BE: OK
-  BE->>BE: jwt.sign({username}, SECRET, exp=1d)
-  BE-->>FE: 201 {token}
-  FE->>FE: localStorage.setItem('auth_token', token)
-  FE-->>User: Signed up (authenticated)
-```
-
-#### Sign-In
-
-```mermaid
-sequenceDiagram
-  autonumber
-  actor User
-  participant FE as Frontend (React)
-  participant BE as Backend (Express)
-  participant DB as DB (Mongo)
-  User->>FE: Enter username & pwd
-  FE->>BE: POST /login {username, pwd}
-  BE->>DB: Find user by username
-  DB-->>BE: {hashedPwd}
-  BE->>BE: bcrypt.compare(pwd, hashedPwd)
-  alt match
-    BE->>BE: jwt.sign({username}, SECRET, exp=1d)
-    BE-->>FE: 200 {token}
-    FE->>FE: localStorage.setItem('auth_token', token)
-    FE-->>User: Logged in
-  else mismatch
-    BE-->>FE: 401 Unauthorized
-  end
-```
-
-#### Protected API Call
-
-```mermaid
-sequenceDiagram
-  autonumber
-  participant FE as Frontend (React)
-  participant MW as Auth Middleware
-  participant BE as Backend (Express)
-  participant DB as DB (Mongo)
-  FE->>FE: token = localStorage.getItem('auth_token')
-  FE->>BE: GET /users\nAuthorization: Bearer <token>
-  BE->>MW: authenticateUser(req)
-  alt valid JWT
-    MW-->>BE: next()
-    BE->>DB: query users
-    DB-->>BE: users
-    BE-->>FE: 200 {users_list}
-  else invalid/missing
-    MW-->>FE: 401 Unauthorized
-  end
-```
-
----
 
 ## Backend Endpoints
 
