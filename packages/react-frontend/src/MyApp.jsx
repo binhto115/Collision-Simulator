@@ -7,16 +7,30 @@ import LoginForm from "./LoginPage/LoginForm";
 import SignUpForm from "./LoginPage/SignUpForm";
 import LegacySim from "./simulator/LegacySim";
 
-// --- slo-2d-ui pages (place files at: src/simulator/pages/*.tsx)
 const DriverPage   = lazy(() => import("./simulator/pages/DriverPage"));
 const VehiclesPage = lazy(() => import("./simulator/pages/VehiclesPage"));
 const RoadPage     = lazy(() => import("./simulator/pages/RoadPage"));
 const WeatherPage  = lazy(() => import("./simulator/pages/WeatherPage"));
 const SettingsPage = lazy(() => import("./simulator/pages/SettingsPage"));
 const LibraryPage  = lazy(() => import("./simulator/pages/LibraryPage"));
-const SimPage      = lazy(() => import("./simulator/pages/SimPage")); // if present
+// const SimPage   = lazy(() => import("./simulator/pages/SimPage"));
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL  = "http://localhost:8000";
+const TOKEN_KEY = "auth_token";
+
+// ------- helpers -------
+function addAuthHeader(other = {}) {
+  const t = localStorage.getItem(TOKEN_KEY);
+  return t ? { ...other, Authorization: `Bearer ${t}` } : { ...other };
+}
+
+function saveToken(t) {
+  if (t) localStorage.setItem(TOKEN_KEY, t);
+}
+
+function clearToken() {
+  localStorage.removeItem(TOKEN_KEY);
+}
 
 // Dashboard (Table + Form)
 function Dashboard({ characters, removeOneCharacter, updateList }) {
@@ -29,30 +43,35 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 }
 
 export default function MyApp() {
-  const [characters, setCharacters] = useState([]);
+  const [characters, setCharacters] = useState(null); // null => “Data Unavailable”
+  const [msg, setMsg] = useState("");
 
-  // --- API helpers ---
+  // --- API helpers wired with Authorization header ---
   function fetchUsers() {
-    return fetch(`${BASE_URL}/users`);
+    return fetch(`${BASE_URL}/users`, {
+      headers: addAuthHeader(),
+    });
   }
 
   function postUser(person) {
     return fetch(`${BASE_URL}/users`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: addAuthHeader({ "Content-Type": "application/json" }),
       body: JSON.stringify(person),
     });
   }
 
   function deleteUser(id) {
-    return fetch(`${BASE_URL}/users/${id}`, { method: "DELETE" });
+    return fetch(`${BASE_URL}/users/${id}`, {
+      method: "DELETE",
+      headers: addAuthHeader(),
+    });
   }
 
-  // initial load
+  // initial load or when token changes
   useEffect(() => {
     fetchUsers()
-      .then((res) => res.status === 200 ? res.json() : undefined
-    )
+      .then((res) => (res.status === 200 ? res.json() : undefined))
       .then((json) => {
         if (json) {
           setCharacters(json["users_list"]);
@@ -60,8 +79,8 @@ export default function MyApp() {
           setCharacters(null);
         }
       })
-      .catch((err) => console.log(err));
-  }, []);
+      .catch(() => setCharacters(null));
+  }, [localStorage.getItem(TOKEN_KEY)]); // re-run when token changes
 
   // actions
   function updateList(person) {
@@ -70,12 +89,12 @@ export default function MyApp() {
         if (res.status !== 201) throw new Error(`Expected 201, got ${res.status}`);
         return res.json();
       })
-      .then((created) => setCharacters((prev) => [...prev, created]))
-      .catch((err) => console.log(err));
+      .then((created) => setCharacters((prev) => (Array.isArray(prev) ? [...prev, created] : [created])))
+      .catch((err) => setMsg(err.message));
   }
 
   function removeOneCharacter(index) {
-    const userToDelete = characters[index];
+    const userToDelete = Array.isArray(characters) ? characters[index] : null;
     if (!userToDelete?._id) return;
 
     deleteUser(userToDelete._id)
@@ -88,18 +107,24 @@ export default function MyApp() {
           throw new Error(`Failed to delete user (status ${res.status})`);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => setMsg(err.message));
   }
 
-  // --- Routes ---
+  // Small helpers to log out for testing
+  function logout() {
+    clearToken();
+    setMsg("Logged out (token cleared). Reload dashboard to verify.");
+    setCharacters(null);
+  }
+
   return (
     <BrowserRouter>
       <nav style={{ padding: 8, display: "flex", gap: 12, flexWrap: "wrap" }}>
         <Link to="/simulate">Simulator</Link>
         <Link to="/dashboard">Dashboard</Link>
-        <Link to="/">Login</Link>
+        <Link to="/login">Login</Link>
         <Link to="/signup">Sign Up</Link>
-        {/* slo-2d-ui pages */}
+        <button onClick={logout} style={{ marginLeft: "auto" }}>Logout</button>
         <Link to="/sim/driver">Driver</Link>
         <Link to="/sim/vehicles">Vehicles</Link>
         <Link to="/sim/road">Road</Link>
@@ -108,12 +133,34 @@ export default function MyApp() {
         <Link to="/sim/library">Library</Link>
       </nav>
 
-      <Routes>
-        {/* Auth */}
-        <Route path="/" element={<LoginForm />} />
-        <Route path="/signup" element={<SignUpForm />} />
+      {msg && <div style={{ padding: "6px 12px", color: "#b91c1c" }}>{msg}</div>}
 
-        {/* App pages */}
+      <Routes>
+        {/* Auth — keep your existing pages, just capture token on success */}
+        <Route
+          path="/login"
+          element={
+            <LoginForm
+              onAuthSuccess={(token) => {
+                saveToken(token);
+                setMsg("Login success — token saved");
+              }}
+            />
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <SignUpForm
+              onAuthSuccess={(token) => {
+                saveToken(token);
+                setMsg("Signup success — token saved");
+              }}
+            />
+          }
+        />
+
+        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -128,15 +175,14 @@ export default function MyApp() {
         {/* Simulator */}
         <Route path="/simulate" element={<LegacySim />} />
 
-        {/* slo-2d-ui pages (lazy) */}
+        {/* slo-2d-ui pages */}
         <Route path="/sim/driver"   element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
         <Route path="/sim/vehicles" element={<Suspense fallback={<div>Loading…</div>}><VehiclesPage /></Suspense>} />
         <Route path="/sim/road"     element={<Suspense fallback={<div>Loading…</div>}><RoadPage /></Suspense>} />
         <Route path="/sim/weather"  element={<Suspense fallback={<div>Loading…</div>}><WeatherPage /></Suspense>} />
         <Route path="/sim/settings" element={<Suspense fallback={<div>Loading…</div>}><SettingsPage /></Suspense>} />
         <Route path="/sim/library"  element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} />
-        {/* optional */}
-        <Route path="/sim" element={<Suspense fallback={<div>Loading…</div>}><SimPage /></Suspense>} />
+        {/* <Route path="/sim" element={<Suspense fallback={<div>Loading…</div>}><SimPage /></Suspense>} /> */}
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/simulate" replace />} />

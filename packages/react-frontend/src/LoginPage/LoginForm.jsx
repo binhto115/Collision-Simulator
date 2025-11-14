@@ -1,73 +1,56 @@
-// src/LoginPage/LoginForm.jsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUser,  FaLock} from "react-icons/fa";
-import './LoginForm.css'
+import { useAuth } from "../auth/AuthContext";
 
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
-const LoginForm = () => {
-    // Check user log-in
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const navigate = useNavigate();
+export default function LoginForm() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const [creds, setCreds] = useState({ username: "", pwd: "" });
+  const [msg, setMsg] = useState("");
 
-        try {
-            const response = await fetch("http://localhost:8000/accounts/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ username, password }),
-            });
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setCreds((s) => ({ ...s, [name === "password" ? "pwd" : name]: value }));
+  };
 
-            const data = await response.json();
+  async function onSubmit(e) {
+    e.preventDefault();
+    setMsg("Logging in…");
 
-            // If login is good (either by admin or user)
-            if (response.ok) {
-                alert(data.message);
-                navigate("/dashboard");
-            }
-            else {
-                alert(data.message || "Login failed");
-            }
-        }
-        catch (error) {
-            console.error("Error:", error);
-            alert("An error occured while logging in.");
-        }
-    };
+    try {
+      const res = await fetch(`${API_BASE}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(creds),
+});
 
-    return (
-        <div className="login-page">
-            <form onSubmit={handleSubmit}>
-                <h2>CrashLab 2D</h2>
+      if (res.status === 200) {
+        const { token } = await res.json();
+        login(token);                // <- stores in context + localStorage
+        setMsg("Login successful. Redirecting…");
+        navigate("/dashboard", { replace: true });
+      } else {
+        const txt = await res.text();
+        setMsg(`Login failed (${res.status}). ${txt || ""}`);
+      }
+    } catch (err) {
+      setMsg(`Login error: ${String(err)}`);
+    }
+  }
 
-                <div className="input-box">
-                    <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)}/>
-                    <FaUser className='icon'/>
-                </div>
+  return (
+    <form onSubmit={onSubmit} className="login-form">
+      <label htmlFor="username">Username</label>
+      <input id="username" name="username" value={creds.username} onChange={onChange} />
 
-                <div className='input-box'>
-                    <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}/>
-                    <FaLock className='icon'/>
-                </div>
+      <label htmlFor="password">Password</label>
+      <input id="password" name="password" type="password" value={creds.pwd} onChange={onChange} />
 
-                <div className='remember-forgot'>
-                    <label><input type="checkbox" />Remember me</label>
-                    <a href="https://neal.fun/password-game/">Forgot password? </a>
-                </div>
-                <button type="submit">Login</button>
-
-                <div className='register-link'>
-                    <p>Don't have an account?{" "}
-                        <a onClick={() => navigate("/signup")}>Sign Up</a></p>
-                </div>
-            </form>
-        </div>
-    );
-};
-
-export default LoginForm; 
+      <button type="submit">Log In</button>
+      {msg && <p style={{marginTop: 8, opacity: 0.8}}>{msg}</p>}
+    </form>
+  );
+}

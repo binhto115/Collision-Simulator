@@ -1,81 +1,84 @@
 // src/LoginPage/SignUpForm.jsx
-import React, { useState }  from 'react';
-import { useNavigate } from "react-router-dom";
-import { FaUser,  FaLock} from "react-icons/fa";
-import './LoginForm.css';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import "./LoginForm.css"; // reuse same CSS
 
-const SignUpForm = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const navigate = useNavigate();
+const BASE_URL = "http://localhost:8000";
 
-  const handleSubmit = async (e) => {
+export default function SignUpForm() {
+  const nav = useNavigate();
+  const [creds, setCreds] = useState({ username: "", pwd: "" });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setCreds((p) => ({ ...p, [name === "password" ? "pwd" : "username"]: value }));
+  };
+
+  const onSubmit = async (e) => {
     e.preventDefault();
-
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
-    const newUser = { username: username, password: password };
-
+    setErr("");
+    setBusy(true);
     try {
-      // POST request for username & password
-      const res = await fetch("http://localhost:8000/accounts", {
+      const res = await fetch(`${BASE_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newUser),
+        body: JSON.stringify(creds),
       });
 
-      if (res.status === 201) {
-        alert("Account created successfully!");
-        navigate("/"); // back to login
-      } else if (res.status === 409) {
-        alert("Username already exists!");
-      } else {
-        alert("Failed to create account. Please try again.");
+      if (res.status !== 201) {
+        const txt = await res.text();
+        throw new Error(`Signup failed (${res.status}). ${txt || ""}`.trim());
       }
-    } catch (error) {
-      console.error("Signup error:", error);
-      alert("Error connecting to server.");
+
+      const { token } = await res.json();
+      localStorage.setItem("auth_token", token);
+      nav("/dashboard");
+    } catch (e2) {
+      setErr(e2.message || "Signup error");
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
     <div className="login-page">
-      <form onSubmit={handleSubmit}>
-        <h2>CrashLab 2D</h2>
-        <h3>Create an account</h3>
+      <form className="login-form" onSubmit={onSubmit}>
+        <h2>Sign Up</h2>
 
-        <div className="input-box">
-          <input type="text" placeholder="Set a Username" 
-          value={username} onChange={(e) => setUsername(e.target.value)}required/>
-          <FaUser className='icon'/>
-        </div>
+        <label htmlFor="username">Username</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          value={creds.username}
+          onChange={onChange}
+          autoComplete="username"
+          required
+        />
 
-        <div className='input-box'>
-          <input type="password" placeholder="Password" 
-          value={password} onChange={(e) => setPassword(e.target.value)}required/>
-          <FaLock className='icon'/>
-        </div>
+        <label htmlFor="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          value={creds.pwd}
+          onChange={onChange}
+          autoComplete="new-password"
+          required
+        />
 
-        <div className='input-box'>
-          <input type="password" placeholder="Confirm Password"
-          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}required/>
-          <FaLock className='icon'/>
-        </div>
+        {err && <p className="auth-error">{err}</p>}
 
-        <button type="submit">Sign Up</button>
+        <button type="submit" disabled={busy}>
+          {busy ? "Signing up…" : "Sign Up"}
+        </button>
 
-        <div className="register-link">
-          <p> Already have an account?{" "}
-            <a onClick={() => navigate("/")}>Back to Login</a>
-          </p>
-        </div>
+        <p className="auth-alt">
+          Already have an account? <Link to="/">Log in</Link>
+        </p>
       </form>
     </div>
   );
-};
-
-export default SignUpForm;
+}
