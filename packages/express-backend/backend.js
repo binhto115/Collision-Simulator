@@ -10,6 +10,7 @@ import express from "express";
 import cors from "cors";
 import userService from "./models/user-services.js";
 import accountsRouter from "./accounts.js";
+import { registerUser, loginUser, authenticateUser, } from "./auth.js";
 
 const app = express();
 const port = 8000;
@@ -18,6 +19,15 @@ app.use(cors());
 app.use(express.json());
 app.use("/accounts", accountsRouter);
 
+// -------------------------
+// 📌 PUBLIC AUTH ROUTES
+// -------------------------
+app.post("/signup", registerUser);
+app.post("/login", loginUser);
+// -------------------------
+// 📌 PROTECTED USER ROUTES
+// -------------------------
+
 app.listen(port, () => {
     console.log(
         `Example app listening at http://localhost:${port}/users`
@@ -25,7 +35,7 @@ app.listen(port, () => {
 });
 
 // POST: Add a new user with random ID
-app.post("/users", (req, res) => {
+app.post("/users", authenticateUser, (req, res) => {
     const userToAdd = req.body;
 
     userService.addUser(userToAdd)
@@ -34,7 +44,7 @@ app.post("/users", (req, res) => {
 });
 
 // DELETE:
-app.delete("/users/:id", (req, res) => {
+app.delete("/users/:id", authenticateUser, (req, res) => {
     const id = req.params["id"];
 
     userService.findUserByIdAndDeleteIt(id)
@@ -48,7 +58,7 @@ app.delete("/users/:id", (req, res) => {
 });
 
 // GET by ID
-app.get("/users/:id", (req, res) => {
+app.get("/users/:id", authenticateUser, (req, res) => {
     const id = req.params["id"]; //or req.params.id
     userService.findUserById(id)
         .then(user => {
@@ -60,7 +70,7 @@ app.get("/users/:id", (req, res) => {
         .catch(err => res.status(500).send(err.message));
 });
 
-app.get("/users", (req, res) => {
+app.get("/users", authenticateUser, (req, res) => {
     const { name, job } = req.query;
 
     let promise;
