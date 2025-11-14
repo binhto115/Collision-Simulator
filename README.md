@@ -46,6 +46,59 @@ Optional workspace settings (`.vscode/settings.json`):
   }
 }
 ```
-<img width="2059" height="829" alt="image" src="https://github.com/user-attachments/assets/c83caa9b-38f6-48ec-a0cf-da3df89db2fb" />
-<img width="2128" height="1174" alt="image" src="https://github.com/user-attachments/assets/814a0276-fcd3-415c-9628-3be7118a9cfb" />
+### Access Control – Sequence Diagrams
 
+#### Sign-Up
+```mermaid
+sequenceDiagram
+  autonumber
+  actor User
+  participant FE as Frontend (React)
+  participant BE as Backend (Express)
+  participant DB as DB (Mongo)
+  User->>FE: Enter username & pwd
+  FE->>BE: POST /signup {username, pwd}
+  BE->>BE: bcrypt.hash(pwd + salt)
+  BE->>DB: INSERT user {username, hashedPwd}
+  DB-->>BE: OK
+  BE->>BE: jwt.sign({username}, SECRET, exp=1d)
+  BE-->>FE: 201 {token}
+  FE->>FE: localStorage.setItem('auth_token', token)
+  FE-->>User: Signed up (authenticated)
+
+sequenceDiagram
+  autonumber
+  actor User
+  participant FE as Frontend (React)
+  participant BE as Backend (Express)
+  participant DB as DB (Mongo)
+  User->>FE: Enter username & pwd
+  FE->>BE: POST /login {username, pwd}
+  BE->>DB: Find user by username
+  DB-->>BE: {hashedPwd}
+  BE->>BE: bcrypt.compare(pwd, hashedPwd)
+  alt match
+    BE->>BE: jwt.sign(payload)
+    BE-->>FE: 200 {token}
+    FE->>FE: localStorage.setItem('auth_token', token)
+  else mismatch
+    BE-->>FE: 401 Unauthorized
+  end
+
+sequenceDiagram
+  autonumber
+  participant FE as Frontend (React)
+  participant BE as Backend (Express)
+  participant MW as Auth Middleware
+  participant DB as DB (Mongo)
+  FE->>FE: token = localStorage.getItem('auth_token')
+  FE->>BE: GET /users (Authorization: Bearer token)
+  BE->>MW: authenticateUser
+  alt valid JWT
+    MW-->>BE: next()
+    BE->>DB: query users
+    DB-->>BE: users
+    BE-->>FE: 200 {users_list}
+  else invalid/missing
+    MW-->>FE: 401 Unauthorized
+  end

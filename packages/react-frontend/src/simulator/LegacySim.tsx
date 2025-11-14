@@ -1,4 +1,5 @@
 ﻿import "./SimLayout.css";
+//import "./styles.css";
 import { useEffect, useRef, useState } from "react";
 import { createInitialState, stepOnce, drawFrame } from "./sim";
 import type { SimConfig, CCRKind } from "./sim";
