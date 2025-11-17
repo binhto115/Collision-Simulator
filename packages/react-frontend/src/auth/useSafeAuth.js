@@ -1,4 +1,4 @@
-import { useAuth } from "./AuthContextInternal";
+import { useAuth } from "./AuthContext";
 /**
  * Safely call useAuth().
  * Returns undefined if not wrapped in <AuthProvider>.
