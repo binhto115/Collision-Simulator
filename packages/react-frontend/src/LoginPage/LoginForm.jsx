@@ -2,19 +2,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import { useSafeAuth } from "../auth/useSafeAuth";
+import { API_BASE } from "../auth/AuthConfig";  
+//const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 export default function LoginForm() {
   const navigate = useNavigate();
-
-  // useAuth may be undefined if AuthProvider isn't mounted; handle gracefully
-  let auth = undefined;
-  try {
-    auth = useAuth();
-  } catch {
-    auth = undefined;
-  }
+  const auth = useSafeAuth();
 
   const [creds, setCreds] = useState({ username: "", pwd: "" });
   const [msg, setMsg] = useState("");
