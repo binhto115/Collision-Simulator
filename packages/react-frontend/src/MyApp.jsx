@@ -24,17 +24,6 @@ function addAuthHeader(other = {}) {
   return t ? { ...other, Authorization: `Bearer ${t}` } : { ...other };
 }
 
-function saveToken(t) {
-  if (t) localStorage.setItem(TOKEN_KEY, t);
-  else localStorage.removeItem(TOKEN_KEY);
-
-  setToken(t); // important!
-}
-
-function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-}
-
 // Dashboard (Table + Form)
 function Dashboard({ characters, removeOneCharacter, updateList }) {
   return (
@@ -51,6 +40,16 @@ export default function MyApp() {
   const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY));
 
 
+  function saveToken(t) {
+    if (t) localStorage.setItem(TOKEN_KEY, t);
+    else localStorage.removeItem(TOKEN_KEY);
+
+    setToken(t); // important!
+  }
+
+  function clearToken() {
+    localStorage.removeItem(TOKEN_KEY);
+  }
 
   // --- API helpers wired with Authorization header ---
   function fetchUsers() {
