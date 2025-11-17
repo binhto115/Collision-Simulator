@@ -1,8 +1,7 @@
-// src/auth/AuthContext.jsx
-import React, { createContext, useMemo, useState, useCallback } from "react";
+// src/auth/AuthProvider.jsx
+import React, { useMemo, useState, useCallback } from "react";
 import { API_BASE } from "./AuthConfig";
-
-export const AuthContext = createContext(null);
+import { AuthContext } from "./AuthContext";
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem("auth_token"));
@@ -20,8 +19,8 @@ export function AuthProvider({ children }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, pwd }),
     });
-
     if (res.status !== 200) throw new Error(`Login failed (${res.status})`);
+
     const { token } = await res.json();
     saveToken(token);
     return token;
@@ -33,8 +32,8 @@ export function AuthProvider({ children }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, pwd }),
     });
-
     if (res.status !== 201) throw new Error(`Signup failed (${res.status})`);
+
     const { token } = await res.json();
     saveToken(token);
     return token;
@@ -56,7 +55,7 @@ export function AuthProvider({ children }) {
       login,
       signup,
       logout,
-      addAuthHeader
+      addAuthHeader,
     }),
     [token, message, login, signup, logout, addAuthHeader]
   );
