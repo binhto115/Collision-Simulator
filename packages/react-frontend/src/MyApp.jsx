@@ -26,6 +26,9 @@ function addAuthHeader(other = {}) {
 
 function saveToken(t) {
   if (t) localStorage.setItem(TOKEN_KEY, t);
+  else localStorage.removeItem(TOKEN_KEY);
+
+  setToken(t); // important!
 }
 
 function clearToken() {
@@ -45,6 +48,9 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 export default function MyApp() {
   const [characters, setCharacters] = useState(null); // null => “Data Unavailable”
   const [msg, setMsg] = useState("");
+  const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY));
+
+
 
   // --- API helpers wired with Authorization header ---
   function fetchUsers() {
@@ -80,7 +86,7 @@ export default function MyApp() {
         }
       })
       .catch(() => setCharacters(null));
-  }, [localStorage.getItem(TOKEN_KEY)]); // re-run when token changes
+  }, [token]); // re-run when token changes
 
   // actions
   function updateList(person) {
