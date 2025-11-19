@@ -30,12 +30,10 @@ jobs:
           npm run -w express-backend test --if-present
         working-directory: packages/express-backend
 
-
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
         working-directory: packages/express-backend
 
   deploy:
