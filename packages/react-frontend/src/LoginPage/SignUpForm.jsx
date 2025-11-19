@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUser,  FaLock} from "react-icons/fa";
 import './LoginForm.css';
 
-const SignUpForm = ( {setToken}) => {
+const SignUpForm = ({ _setToken }) => { // prefix _, unused
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,7 +28,7 @@ const SignUpForm = ( {setToken}) => {
         body: JSON.stringify(newUser),
       });
 
-      const data = await res.json(); // parse response
+      await res.json(); // parse response
       
       if (res.status === 201) {
         alert("Account created successfully!");
