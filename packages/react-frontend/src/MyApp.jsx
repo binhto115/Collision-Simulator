@@ -31,7 +31,7 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 export default function MyApp() {
   const INVALID_TOKEN = "INVALID_TOKEN";
   const [token, setToken] = useState(localStorage.getItem("token") || INVALID_TOKEN);
-  const [message, setMessage] = useState(""); // optional, for login/signup messages
+  // const [message, setMessage] = useState(""); // optional, for login/signup messages
 
   const [characters, setCharacters] = useState([]);
 
@@ -48,32 +48,30 @@ export default function MyApp() {
   }
 
   // --- API helpers ---
-function fetchUsers() {
-  return fetch(`${BASE_URL}/users`, {
-    headers: addAuthHeader({ "Content-Type": "application/json" }),
-  });
-}
-
-function postUser(person) {
-  return fetch(`${BASE_URL}/users`, {
-    method: "POST",
-    headers: addAuthHeader({ "Content-Type": "application/json" }),
-    body: JSON.stringify(person),
-  });
-}
+  function postUser(person) {
+    return fetch(`${BASE_URL}/users`, {
+      method: "POST",
+      headers: addAuthHeader({ "Content-Type": "application/json" }),
+      body: JSON.stringify(person),
+    });
+  }
 
   function deleteUser(id) {
     return fetch(`${BASE_URL}/users/${id}`, {
       method: "DELETE",
       headers: addAuthHeader({ "Content-Type": "application/json" }),
     });
-}
+  }
 
   // initial load
   useEffect(() => {
-    fetchUsers()
-      .then((res) => res.status === 200 ? res.json() : undefined
-    )
+    const headers =
+      token === INVALID_TOKEN
+        ? { "Content-Type": "application/json" }
+        : { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+  
+    fetch(`${BASE_URL}/users`, { headers })
+      .then((res) => (res.status === 200 ? res.json() : undefined))
       .then((json) => {
         if (json) {
           setCharacters(json["users_list"]);
@@ -82,7 +80,7 @@ function postUser(person) {
         }
       })
       .catch((err) => console.log(err));
-  }, [token]); // no token before
+  }, [token]);
 
   // actions
   function updateList(person) {
