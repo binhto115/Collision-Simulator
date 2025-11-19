@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const creds = []; // In-memory credential store: { username, hashedPassword }
-const SALT_ROUNDS = 10; // adjust as needed
+// const SALT_ROUNDS = 10; // adjust as needed
 
 // Helper that returns a Promise resolving to a signed JWT
 function generateAccessToken(username) {
