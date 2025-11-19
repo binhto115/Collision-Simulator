@@ -30,7 +30,7 @@ export function authenticateUser(req, res, next) {
     const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
-        console.log("No token received");
+        console.log("No token received\n");
         res.status(401).end();
     } else {
         jwt.verify(
@@ -53,9 +53,9 @@ export function registerUser(req, res) {
     const { username, pwd } = req.body; // from form
 
     if (!username || !pwd) {
-        res.status(400).send("Bad request: Invalid input data.");
+        res.status(400).send("Bad request: Invalid input data.\n");
     } else if (creds.find((c) => c.username === username)) {
-        res.status(409).send("Username already taken");
+        res.status(409).send("Username already taken\n");
     } else {
         bcrypt
             .genSalt(10)
@@ -63,6 +63,7 @@ export function registerUser(req, res) {
             .then((hashedPassword) => {
                 generateAccessToken(username).then((token) => {
                     console.log("Token:", token);
+                    console.log("\n")
                     res.status(201).send({ token: token });
                     creds.push({ username, hashedPassword });
                 });
@@ -79,7 +80,7 @@ export function loginUser(req, res) {
 
     if (!retrievedUser) {
         // invalid username
-        res.status(401).send("Unauthorized");
+        res.status(401).send("Invalid Username: Unauthorized\n");
     } else {
         bcrypt
             .compare(pwd, retrievedUser.hashedPassword)
@@ -90,11 +91,11 @@ export function loginUser(req, res) {
                     });
                 } else {
                     // invalid password
-                    res.status(401).send("Unauthorized");
+                    res.status(401).send("Invalid Passowrd: Unauthorized\n");
                 }
             })
             .catch(() => {
-                res.status(401).send("Unauthorized");
+                res.status(401).send("Unauthorized\n");
             });
     }
 }

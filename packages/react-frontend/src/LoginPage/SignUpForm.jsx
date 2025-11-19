@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUser,  FaLock} from "react-icons/fa";
 import './LoginForm.css';
 
-const SignUpForm = () => {
+const SignUpForm = ( {setToken}) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -18,7 +18,7 @@ const SignUpForm = () => {
       return;
     }
 
-    const newUser = { username: username, password: password };
+    const newUser = { username: username, pwd: password };
 
     try {
       // POST request for username & password
@@ -28,13 +28,15 @@ const SignUpForm = () => {
         body: JSON.stringify(newUser),
       });
 
+      const data = await res.json(); // parse response
+      
       if (res.status === 201) {
         alert("Account created successfully!");
         navigate("/"); // back to login
       } else if (res.status === 409) {
         alert("Username already exists!");
       } else {
-        alert("Failed to create account. Please try again.");
+        alert(`Failed to create account. Please try again. Status: ${res.status}`);
       }
     } catch (error) {
       console.error("Signup error:", error);

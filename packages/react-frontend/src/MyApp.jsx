@@ -29,24 +29,45 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 }
 
 export default function MyApp() {
+  const INVALID_TOKEN = "INVALID_TOKEN";
+  const [token, setToken] = useState(localStorage.getItem("token") || INVALID_TOKEN);
+  const [message, setMessage] = useState(""); // optional, for login/signup messages
+
   const [characters, setCharacters] = useState([]);
 
-  // --- API helpers ---
-  function fetchUsers() {
-    return fetch(`${BASE_URL}/users`);
+  // Helper function that adds the correct Authorization header.
+  function addAuthHeader(otherHeaders = {}) {
+    if (token === INVALID_TOKEN) {
+      return otherHeaders;
+    } else {
+      return {
+        ...otherHeaders,
+        Authorization: `Bearer ${token}`,
+      };
+    }
   }
 
-  function postUser(person) {
-    return fetch(`${BASE_URL}/users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(person),
-    });
-  }
+  // --- API helpers ---
+function fetchUsers() {
+  return fetch(`${BASE_URL}/users`, {
+    headers: addAuthHeader({ "Content-Type": "application/json" }),
+  });
+}
+
+function postUser(person) {
+  return fetch(`${BASE_URL}/users`, {
+    method: "POST",
+    headers: addAuthHeader({ "Content-Type": "application/json" }),
+    body: JSON.stringify(person),
+  });
+}
 
   function deleteUser(id) {
-    return fetch(`${BASE_URL}/users/${id}`, { method: "DELETE" });
-  }
+    return fetch(`${BASE_URL}/users/${id}`, {
+      method: "DELETE",
+      headers: addAuthHeader({ "Content-Type": "application/json" }),
+    });
+}
 
   // initial load
   useEffect(() => {
@@ -61,7 +82,7 @@ export default function MyApp() {
         }
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [token]); // no token before
 
   // actions
   function updateList(person) {
@@ -99,6 +120,7 @@ export default function MyApp() {
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/">Login</Link>
         <Link to="/signup">Sign Up</Link>
+        
         {/* slo-2d-ui pages */}
         <Link to="/sim/driver">Driver</Link>
         <Link to="/sim/vehicles">Vehicles</Link>
@@ -110,8 +132,8 @@ export default function MyApp() {
 
       <Routes>
         {/* Auth */}
-        <Route path="/" element={<LoginForm />} />
-        <Route path="/signup" element={<SignUpForm />} />
+        <Route path="/" element={<LoginForm setToken={setToken}/>} />
+        <Route path="/signup" element={<SignUpForm setToken={setToken}/>} />
 
         {/* App pages */}
         <Route
