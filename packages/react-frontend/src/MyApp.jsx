@@ -15,7 +15,7 @@ const SettingsPage = lazy(() => import("./simulator/pages/SettingsPage"));
 const LibraryPage  = lazy(() => import("./simulator/pages/LibraryPage"));
 // const SimPage   = lazy(() => import("./simulator/pages/SimPage"));
 
-const BASE_URL  = "http://localhost:8000";
+const BASE_URL  = "collision-sim-backend-hwexdffvd3c5c7e9.westus3-01.azurewebsites.net";
 const TOKEN_KEY = "auth_token";
 
 // ------- helpers -------
