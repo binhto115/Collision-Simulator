@@ -19,22 +19,22 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
+          node-version: '20.x'   # recommended for Express stack
 
       - name: npm install, build, and test
         run: |
           npm install --workspaces=false
           npm run -w express-backend build --if-present
           npm run -w express-backend test --if-present
-        working-directory: packages/express-backend
+        working-directory: packages/express-backend  # ✅ allowed here (run step)
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-        working-directory: packages/express-backend
+          path: packages/express-backend            # ✅ point to backend folder (no working-directory on "uses")
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -56,11 +56,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FBE9BCFF22434A7DA55C25FF55A8C996 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_49CCD550E69D4EF9896EF75AA6BC6A62 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'collision-simulator-backend'
           slot-name: 'Production'
-          package: node-app
-          
+          package: node-app  # this matches the downloaded artifact directory
