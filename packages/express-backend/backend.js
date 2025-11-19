@@ -101,5 +101,5 @@ app.get("/users", authenticateUser, (req, res) => {
 
 /* -------------------- Start server -------------------- */
 app.listen(PORT, () => {
-  console.log(`API listening on http://localhost:${PORT}`);
+  console.log("REST API is listening.");
 });
