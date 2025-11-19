@@ -190,7 +190,7 @@ export default function MyApp() {
         {/* <Route path="/sim" element={<Suspense fallback={<div>Loading…</div>}><SimPage /></Suspense>} /> */}
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/simulate" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
