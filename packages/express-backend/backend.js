@@ -13,7 +13,7 @@ import accountsRouter from "./accounts.js";
 import { registerUser, loginUser, authenticateUser, } from "./auth.js";
 
 const app = express();
-const port = 8000;
+const port = 5000;
 
 app.use(cors());
 app.use(express.json());
