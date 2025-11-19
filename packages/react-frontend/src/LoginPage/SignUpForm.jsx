@@ -22,7 +22,7 @@ const SignUpForm = () => {
 
     try {
       // POST request for username & password
-      const res = await fetch("https://collision-simulator-backend-fqbna6bcfubxfnfv.westus3-01.azurewebsites.net/accounts", {
+      const res = await fetch("http://localhost:8000/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newUser),

@@ -16,7 +16,7 @@ const LoginForm = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch("https://collision-simulator-backend-fqbna6bcfubxfnfv.westus3-01.azurewebsites.net/accounts/login", {
+            const response = await fetch("http://localhost:8000/accounts/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
