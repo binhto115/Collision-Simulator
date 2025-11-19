@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "./LoginForm.css"; // reuse same CSS
 
-const BASE_URL = "https://black-forest-022bc951e.3.azurestaticapps.net";
+const BASE_URL = "http://localhost:8000";
 
 export default function SignUpForm() {
   const nav = useNavigate();
