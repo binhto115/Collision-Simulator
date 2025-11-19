@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 8000;
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // Vite dev URL
+    origin: "https://black-forest-022bc951e.3.azurestaticapps.net", // Changed to be deployed front end (can add local for faster testing)
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
