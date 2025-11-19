@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUser,  FaLock} from "react-icons/fa";
 import './LoginForm.css';
 
-const SignUpForm = ({ _setToken }) => { // prefix _, unused
+const SignUpForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
