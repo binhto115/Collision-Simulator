@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "./LoginForm.css"; // reuse same CSS
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = "collision-sim-backend-hwexdffvd3c5c7e9.westus3-01.azurewebsites.net";
 
 export default function SignUpForm() {
   const nav = useNavigate();
