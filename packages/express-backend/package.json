@@ -8,7 +8,8 @@
     "dev": "npx nodemon backend.js",
     "start": "node backend.js",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "echo \"no tests\""
   },
   "devDependencies": {
     "eslint": "^8.57.1",
