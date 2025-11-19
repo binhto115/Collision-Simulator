@@ -10,7 +10,7 @@ const LoginForm = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
-    const [token, setToken] = useState(localStorage.getItem("token") || "");
+    const [, setToken] = useState(localStorage.getItem("token") || ""); // don't need first value, still want setter
 
     const handleSubmit = async (e) => {
         e.preventDefault();
