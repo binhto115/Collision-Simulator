@@ -1,8 +1,8 @@
 // src/LoginPage/SignUpForm.jsx
-import React, { useState }  from 'react';
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUser,  FaLock} from "react-icons/fa";
-import './LoginForm.css';
+import { FaUser, FaLock } from "react-icons/fa";
+import "./LoginForm.css";
 
 const SignUpForm = () => {
   const [username, setUsername] = useState("");
@@ -22,14 +22,17 @@ const SignUpForm = () => {
 
     try {
       // POST request for username & password
-      const res = await fetch("https://collision-simulator-backend-fqbna6bcfubxfnfv.westus3-01.azurewebsites.net/accounts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newUser),
-      });
+      const res = await fetch(
+        "https://collision-simulator-backend-fqbna6bcfubxfnfv.westus3-01.azurewebsites.net/accounts",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newUser),
+        }
+      );
 
       await res.json(); // parse response
-      
+
       if (res.status === 201) {
         alert("Account created successfully!");
         navigate("/"); // back to login
@@ -51,28 +54,44 @@ const SignUpForm = () => {
         <h3>Create an account</h3>
 
         <div className="input-box">
-          <input type="text" placeholder="Set a Username" 
-          value={username} onChange={(e) => setUsername(e.target.value)}required/>
-          <FaUser className='icon'/>
+          <input
+            type="text"
+            placeholder="Set a Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <FaUser className="icon" />
         </div>
 
-        <div className='input-box'>
-          <input type="password" placeholder="Password" 
-          value={password} onChange={(e) => setPassword(e.target.value)}required/>
-          <FaLock className='icon'/>
+        <div className="input-box">
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <FaLock className="icon" />
         </div>
 
-        <div className='input-box'>
-          <input type="password" placeholder="Confirm Password"
-          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}required/>
-          <FaLock className='icon'/>
+        <div className="input-box">
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+          <FaLock className="icon" />
         </div>
 
         <button type="submit">Sign Up</button>
 
         <div className="register-link">
-          <p> Already have an account?{" "}
-            <a onClick={() => navigate("/")}>Back to Login</a>
+          <p>
+            {" "}
+            Already have an account? <a onClick={() => navigate("/")}>Back to Login</a>
           </p>
         </div>
       </form>
