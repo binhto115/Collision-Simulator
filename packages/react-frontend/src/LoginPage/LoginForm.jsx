@@ -68,10 +68,11 @@ const LoginForm = () => {
                     <FaLock className='icon'/>
                 </div>
 
-                <div className='remember-forgot'>
+                {/* <div className='remember-forgot'>
                     <label><input type="checkbox" />Remember me</label>
                     <a href="https://neal.fun/password-game/">Forgot password? </a>
-                </div>
+                </div> */}
+                
                 <button type="submit">Login</button>
 
                 <div className='register-link'>
