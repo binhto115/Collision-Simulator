@@ -1,27 +1,29 @@
 import mongoose from "mongoose";
 import userModel from "./user.js";
 import dotenv from "dotenv";
-import path from "path"
 
+// Load .env only in local dev (Azure uses App Settings)
+if (process.env.NODE_ENV !== "production") {
+    dotenv.config(); // looks for .env in the current working directory
+}
 
-// Load .env file variables
-dotenv.config({ path: path.resolve("../../.env") });
-console.log("Mongo URI:", process.env.MONGODB_URI);
+// Read the URI from Azure App Settings or a local .env
+const uri = process.env.MONGODB_URI || process.env.CUSTOMCONNSTR_MONGODB_URI;
 
-mongoose.set("debug", true);
-mongoose.set('strictQuery', true); // or false
+if (!uri) {
+    console.error("❌ Missing MongoDB URI! Define MONGODB_URI (or CUSTOMCONNSTR_MONGODB_URI on Azure).");
+}
 
-// Use your .env variable instead of hardcoding it
-const uri = process.env.MONGODB_URI;
+mongoose.set("strictQuery", true);
+// (optional) turn off noisy logs in prod
+if (process.env.NODE_ENV !== "production") {
+    mongoose.set("debug", true);
+}
 
 mongoose
-
-    .connect(uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-    .then(() => console.log('MongoDB connected!'))
-    .catch((error) => console.error("❌ MongoDB connection error:", error));
+    .connect(uri) // Mongoose 7+ does not need useNewUrlParser/useUnifiedTopology
+    .then(() => console.log("✅ MongoDB connected!"))
+    .catch((error) => console.error("❌ MongoDB connection error:", error.message));
 
 
 
