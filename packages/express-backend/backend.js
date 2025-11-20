@@ -20,12 +20,13 @@ app.use(express.json());
 app.use("/accounts", accountsRouter);
 
 // -------------------------
-// 📌 PUBLIC AUTH ROUTES
+//    PUBLIC AUTH ROUTES
 // -------------------------
 app.post("/signup", registerUser);
 app.post("/login", loginUser);
+
 // -------------------------
-// 📌 PROTECTED USER ROUTES
+//   PROTECTED USER ROUTES
 // -------------------------
 
 app.listen(process.env.PORT || port, () => {

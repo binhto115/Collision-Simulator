@@ -10,13 +10,13 @@ router.post("/", async(req, res) => {
     try {
         const { username, pwd } = req.body;
 
-        if (!username || !pwd) {
+        if (!username || !pwd) { // Must fill in blank
             return res.status(400).json({ message: "Username and password required." });
         }
 
-        // Check if username already exists
         const existing = await Account.findOne({ username });
-        if (existing) {
+
+        if (existing) { // Check existing username
             return res.status(409).json({ message: "Username already exists." });
         }
 
@@ -24,10 +24,11 @@ router.post("/", async(req, res) => {
         const newAccount = new Account({ username, password: pwd });
         await newAccount.save();
 
-        console.log("✅ New account created:", newAccount);
+        console.log("New account created:", newAccount);
         return res.status(201).json({ message: "Account created successfully!" });;
-    } catch (err) {
-        console.error("❌ Error creating account:", err);
+    } 
+    catch (err) {
+        console.error("Error creating account:", err);
         return res.status(500).json({ message: "Internal server error." });
     }
 });
@@ -45,18 +46,15 @@ router.post("/login", async(req, res) => {
         return res.status(200).json({ message: "Admin login successful", admin: true });
     }
 
-    // No logic added for mongoose yet
     try {
         // Find user in MongoDB
         const account = await Account.findOne({ username });
 
-        // Account DNE
-        if (!account) {
+        if (!account) { // Account DNE
             return res.status(404).json({ message: "User not found." });
         }
 
-        // DB password not same as input password
-        if (account.password !== pwd) {
+        if (account.password !== pwd) { // Password mismatch
             return res.status(401).json({ message: "Invalid password." });
         }
 
