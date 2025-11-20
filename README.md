@@ -47,5 +47,4 @@ Optional workspace settings (`.vscode/settings.json`):
 }
 ```
 
-
-# test CI trigger
+# test CI/CD trigger
