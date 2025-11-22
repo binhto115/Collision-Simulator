@@ -38,16 +38,16 @@ export default function MyApp() {
   // const [characters, setCharacters] = useState([]);
 
   // Helper function that adds the correct Authorization header.
-  function addAuthHeader(otherHeaders = {}) {
-    if (token === INVALID_TOKEN) {
-      return otherHeaders;
-    } else {
-      return {
-        ...otherHeaders,
-        Authorization: `Bearer ${token}`,
-      };
-    }
-  }
+  // function addAuthHeader(otherHeaders = {}) {
+  //   if (token === INVALID_TOKEN) {
+  //     return otherHeaders;
+  //   } else {
+  //     return {
+  //       ...otherHeaders,
+  //       Authorization: `Bearer ${token}`,
+  //     };
+  //   }
+  // }
 
   // --- API helpers ---
   // function postUser(person) {
