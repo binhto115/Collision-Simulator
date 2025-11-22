@@ -7,7 +7,7 @@ import LoginForm from "./LoginPage/LoginForm";
 import SignUpForm from "./LoginPage/SignUpForm";
 import LegacySim from "./simulator/LegacySim";
 import ForgotPasswordForm from "./LoginPage/ForgotPasswordForm";
-import SimHub from "./SimHub"
+import SimHub from "./simHub"
 
 // --- slo-2d-ui pages (place files at: src/simulator/pages/*.tsx)
 const DriverPage   = lazy(() => import("./simulator/pages/DriverPage"));
