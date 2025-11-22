@@ -85,32 +85,32 @@ export default function MyApp() {
   }, [token]);
 
   // actions
-  function updateList(person) {
-    postUser(person)
-      .then((res) => {
-        if (res.status !== 201) throw new Error(`Expected 201, got ${res.status}`);
-        return res.json();
-      })
-      .then((created) => setCharacters((prev) => [...prev, created]))
-      .catch((err) => console.log(err));
-  }
+  // function updateList(person) {
+  //   postUser(person)
+  //     .then((res) => {
+  //       if (res.status !== 201) throw new Error(`Expected 201, got ${res.status}`);
+  //       return res.json();
+  //     })
+  //     .then((created) => setCharacters((prev) => [...prev, created]))
+  //     .catch((err) => console.log(err));
+  // }
 
-  function removeOneCharacter(index) {
-    const userToDelete = characters[index];
-    if (!userToDelete?._id) return;
+  // function removeOneCharacter(index) {
+  //   const userToDelete = characters[index];
+  //   if (!userToDelete?._id) return;
 
-    deleteUser(userToDelete._id)
-      .then((res) => {
-        if (res.status === 204) {
-          setCharacters((prev) => prev.filter((_, i) => i !== index));
-        } else if (res.status === 404) {
-          alert("Resource not found");
-        } else {
-          throw new Error(`Failed to delete user (status ${res.status})`);
-        }
-      })
-      .catch((err) => console.log(err));
-  }
+  //   deleteUser(userToDelete._id)
+  //     .then((res) => {
+  //       if (res.status === 204) {
+  //         setCharacters((prev) => prev.filter((_, i) => i !== index));
+  //       } else if (res.status === 404) {
+  //         alert("Resource not found");
+  //       } else {
+  //         throw new Error(`Failed to delete user (status ${res.status})`);
+  //       }
+  //     })
+  //     .catch((err) => console.log(err));
+  // }
 
   // --- Routes ---
   return (
