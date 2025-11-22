@@ -35,7 +35,7 @@ export default function MyApp() {
   const [token, setToken] = useState(localStorage.getItem("token") || INVALID_TOKEN);
   // const [message, setMessage] = useState(""); // optional, for login/signup messages
 
-  const [characters, setCharacters] = useState([]);
+  // const [characters, setCharacters] = useState([]);
 
   // Helper function that adds the correct Authorization header.
   function addAuthHeader(otherHeaders = {}) {
@@ -50,20 +50,20 @@ export default function MyApp() {
   }
 
   // --- API helpers ---
-  function postUser(person) {
-    return fetch(`${BASE_URL}/users`, {
-      method: "POST",
-      headers: addAuthHeader({ "Content-Type": "application/json" }),
-      body: JSON.stringify(person),
-    });
-  }
+  // function postUser(person) {
+  //   return fetch(`${BASE_URL}/users`, {
+  //     method: "POST",
+  //     headers: addAuthHeader({ "Content-Type": "application/json" }),
+  //     body: JSON.stringify(person),
+  //   });
+  // }
 
-  function deleteUser(id) {
-    return fetch(`${BASE_URL}/users/${id}`, {
-      method: "DELETE",
-      headers: addAuthHeader({ "Content-Type": "application/json" }),
-    });
-  }
+  // function deleteUser(id) {
+  //   return fetch(`${BASE_URL}/users/${id}`, {
+  //     method: "DELETE",
+  //     headers: addAuthHeader({ "Content-Type": "application/json" }),
+  //   });
+  // }
 
   // initial load
   useEffect(() => {
