@@ -51,12 +51,12 @@ const SignUpForm = () => {
     <div className="login-page">
       <form onSubmit={handleSubmit}>
         <h2>CrashLab 2D</h2>
-        <h3>Create an account</h3>
+        <h3>Create Account</h3>
 
         <div className="input-box">
           <input
             type="text"
-            placeholder="Set a Username"
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required

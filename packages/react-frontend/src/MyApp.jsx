@@ -6,6 +6,8 @@ import Form from "./Components/Form";
 import LoginForm from "./LoginPage/LoginForm";
 import SignUpForm from "./LoginPage/SignUpForm";
 import LegacySim from "./simulator/LegacySim";
+import ForgotPasswordForm from "./LoginPage/ForgotPasswordForm";
+import SimHub from "./SimHub"
 
 // --- slo-2d-ui pages (place files at: src/simulator/pages/*.tsx)
 const DriverPage   = lazy(() => import("./simulator/pages/DriverPage"));
@@ -114,36 +116,37 @@ export default function MyApp() {
   return (
     <BrowserRouter>
       <nav style={{ padding: 8, display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <Link to="/simulate">Simulator</Link>
+        {/* <Link to="/simulate">Simulator</Link>
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/">Login</Link>
         <Link to="/signup">Sign Up</Link>
         
         {/* slo-2d-ui pages */}
-        <Link to="/sim/driver">Driver</Link>
+        {/* <Link to="/sim/driver">Driver</Link>
         <Link to="/sim/vehicles">Vehicles</Link>
         <Link to="/sim/road">Road</Link>
         <Link to="/sim/weather">Weather</Link>
         <Link to="/sim/settings">Settings</Link>
-        <Link to="/sim/library">Library</Link>
-      </nav>
+        <Link to="/sim/library">Library</Link> */}
+      </nav> 
 
       <Routes>
+        {/* <Route path="/" element={<Navigate to="/sim" replace />} /> */}
+
         {/* Auth */}
         <Route path="/" element={<LoginForm setToken={setToken}/>} />
         <Route path="/signup" element={<SignUpForm setToken={setToken}/>} />
+        <Route path="/forgotpass" element={<ForgotPasswordForm/>}/>
+        <Route path="/simHub" element={<SimHub />} />
 
         {/* App pages */}
-        <Route
-          path="/dashboard"
-          element={
-            <Dashboard
+        {/* <Route path="/dashboard" element={<Dashboard
               characters={characters}
               removeOneCharacter={removeOneCharacter}
               updateList={updateList}
             />
           }
-        />
+        /> */}
 
         {/* Simulator */}
         <Route path="/simulate" element={<LegacySim />} />

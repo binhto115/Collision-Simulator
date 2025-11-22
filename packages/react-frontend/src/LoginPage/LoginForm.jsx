@@ -22,10 +22,13 @@ const LoginForm = () => {
           headers: {
             "Content-Type": "application/json",
           },
+          // When you submit the form, you use those stored values in your fetch request:
           body: JSON.stringify({ username, pwd: password }),
+          // That’s where the inputs are actually sent to the backend.
         }
       );
-
+      
+      // Wait for backend comfirmation
       const data = await response.json();
 
       // If login is good (either by admin or user)
@@ -35,7 +38,7 @@ const LoginForm = () => {
         localStorage.setItem("token", data.token);
 
         alert(data.message);
-        navigate("/dashboard");
+        navigate("/simHub");
       } else {
         alert(data.message || "Login failed");
       }
@@ -55,7 +58,7 @@ const LoginForm = () => {
             type="text"
             placeholder="Username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)} // take whatever the user typed (e.target.value) and update the username state variable
           />
           <FaUser className="icon" />
         </div>
@@ -70,10 +73,12 @@ const LoginForm = () => {
           <FaLock className="icon" />
         </div>
 
-        {/* <div className='remember-forgot'>
-                    <label><input type="checkbox" />Remember me</label>
-                    <a href="https://neal.fun/password-game/">Forgot password? </a>
-            </div> */}
+        <div className='remember-forgot'>
+          <label><input type="checkbox" />Remember me</label>
+          {/* <a href="https://neal.fun/password-game/">Forgot password? </a> */}
+          <a onClick={() => navigate("/forgotpass")}>Forgot password?</a>
+
+        </div>
 
         <button type="submit">Login</button>
 
