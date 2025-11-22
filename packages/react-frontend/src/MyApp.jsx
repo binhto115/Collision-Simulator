@@ -33,7 +33,7 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 export default function MyApp() {
   const INVALID_TOKEN = "INVALID_TOKEN";
   const [token, setToken] = useState(localStorage.getItem("token") || INVALID_TOKEN);
-  const [message, setMessage] = useState(""); // optional, for login/signup messages
+  // const [message, setMessage] = useState(""); // optional, for login/signup messages
 
   const [_characters, setCharacters] = useState([]);
 
