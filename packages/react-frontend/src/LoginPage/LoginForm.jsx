@@ -18,8 +18,8 @@ const LoginForm = () => {
     e.preventDefault();
 
     try {
-      //const response = await fetch("https://collision-simulator-backend-fqbna6bcfubxfnfv.westus3-01.azurewebsites.net/accounts/login",
-      const response = await fetch("http://localhost:5000/accounts/login",
+      const response = await fetch("https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts/login",
+      //const response = await fetch("http://localhost:5000/accounts/login",
       {
           method: "POST",
           headers: {
@@ -45,7 +45,6 @@ const LoginForm = () => {
         } else {
           localStorage.removeItem("token");
         }
-
         alert(data.message);
         navigate("/simHub");
       } else {

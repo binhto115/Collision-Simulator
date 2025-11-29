@@ -23,8 +23,8 @@ const ResetPasswordPage = () => {
         }
 
         try {
-            //const res = await fetch("https://collision-simulator-fjbmgebxazfcdpe4.westus3-01.azurewebsites.net", {
-            const res = await fetch("http://localhost:5000/accounts/reset-password", {
+            const res = await fetch("https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts/reset-password", {
+            //const res = await fetch("http://localhost:5000/accounts/reset-password", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token, newPassword: password }),

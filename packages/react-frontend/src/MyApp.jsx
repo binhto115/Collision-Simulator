@@ -19,8 +19,8 @@ const SettingsPage = lazy(() => import("./simulator/pages/SettingsPage"));
 const LibraryPage  = lazy(() => import("./simulator/pages/LibraryPage"));
 const SimPage      = lazy(() => import("./simulator/pages/SimPage")); // if present
 
-const BASE_URL = "http://localhost:5000";
-
+//const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net"
 // Dashboard (Table + Form)
 function Dashboard({ characters, removeOneCharacter, updateList }) {
   return (

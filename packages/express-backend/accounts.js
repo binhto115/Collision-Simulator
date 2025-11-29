@@ -36,7 +36,8 @@ router.post("/reset-request", async(req, res) => {
             process.env.RESET_SECRET, { expiresIn: "10m" }
         );
         console.log(resetToken)
-        const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5175";
+        const FRONTEND_URL = process.env.FRONTEND_URL || "https://ashy-sky-0aaa4b51e.3.azurestaticapps.net"; //"http://localhost:5175";
+
         const resetURL = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
         console.log("RESET_EMAIL:", process.env.RESET_EMAIL);
         console.log("RESET_EMAIL_PASS length:", process.env.RESET_EMAIL_PASS.length);
