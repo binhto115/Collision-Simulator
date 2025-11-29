@@ -1,13 +1,14 @@
 // src/MyApp.jsx
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import SimHub from "./simHub"
 import Table from "./Components/Table";
 import Form from "./Components/Form";
 import LoginForm from "./LoginPage/LoginForm";
 import SignUpForm from "./LoginPage/SignUpForm";
 import LegacySim from "./simulator/LegacySim";
 import ForgotPasswordForm from "./LoginPage/ForgotPasswordForm";
-import SimHub from "./simHub"
+import ResetPasswordPage from "./LoginPage/ResetPasswordPage";
 
 // --- slo-2d-ui pages (place files at: src/simulator/pages/*.tsx)
 const DriverPage   = lazy(() => import("./simulator/pages/DriverPage"));
@@ -18,7 +19,7 @@ const SettingsPage = lazy(() => import("./simulator/pages/SettingsPage"));
 const LibraryPage  = lazy(() => import("./simulator/pages/LibraryPage"));
 const SimPage      = lazy(() => import("./simulator/pages/SimPage")); // if present
 
-const BASE_URL = "https://collision-simulator-backend-fqbna6bcfubxfnfv.westus3-01.azurewebsites.net";
+const BASE_URL = "http://localhost:5000";
 
 // Dashboard (Table + Form)
 function Dashboard({ characters, removeOneCharacter, updateList }) {
@@ -33,8 +34,6 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 export default function MyApp() {
   const INVALID_TOKEN = "INVALID_TOKEN";
   const [token, setToken] = useState(localStorage.getItem("token") || INVALID_TOKEN);
-  // const [message, setMessage] = useState(""); // optional, for login/signup messages
-
   const [_characters, setCharacters] = useState([]);
 
   // Helper function that adds the correct Authorization header.
@@ -138,15 +137,7 @@ export default function MyApp() {
         <Route path="/signup" element={<SignUpForm setToken={setToken}/>} />
         <Route path="/forgotpass" element={<ForgotPasswordForm/>}/>
         <Route path="/simHub" element={<SimHub />} />
-
-        {/* App pages */}
-        {/* <Route path="/dashboard" element={<Dashboard
-              characters={characters}
-              removeOneCharacter={removeOneCharacter}
-              updateList={updateList}
-            />
-          }
-        /> */}
+        <Route path="/reset-password" element={<ResetPasswordPage/>} />
 
         {/* Simulator */}
         <Route path="/simulate" element={<LegacySim />} />

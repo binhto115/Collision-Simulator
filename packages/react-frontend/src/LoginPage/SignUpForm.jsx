@@ -56,7 +56,7 @@ const SignUpForm = () => {
         <div className="input-box">
           <input
             type="text"
-            placeholder="Username"
+            placeholder="Email"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required

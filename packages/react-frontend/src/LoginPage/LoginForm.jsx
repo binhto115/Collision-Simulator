@@ -6,18 +6,21 @@ import "./LoginForm.css";
 
 const LoginForm = () => {
   // Check user log-in
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [rememberMe, setRememberMe] = useState(false);
+
+
   const [, setToken] = useState(localStorage.getItem("token") || ""); // don't need first value, still want setter
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        "https://collision-simulator-backend-fqbna6bcfubxfnfv.westus3-01.azurewebsites.net/accounts/login",
-        {
+      //const response = await fetch("https://collision-simulator-backend-fqbna6bcfubxfnfv.westus3-01.azurewebsites.net/accounts/login",
+      const response = await fetch("http://localhost:5000/accounts/login",
+      {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -33,9 +36,15 @@ const LoginForm = () => {
 
       // If login is good (either by admin or user)
       if (response.ok) {
-        // Save token to state and localStorage
+        // Set token to state
         setToken(data.token);
-        localStorage.setItem("token", data.token);
+
+        // If Remember Me Checkbox is checked
+        if (rememberMe) {
+          localStorage.setItem("token", data.token); // save token to localStorage
+        } else {
+          localStorage.removeItem("token");
+        }
 
         alert(data.message);
         navigate("/simHub");
@@ -56,7 +65,7 @@ const LoginForm = () => {
         <div className="input-box">
           <input
             type="text"
-            placeholder="Username"
+            placeholder="Email"
             value={username}
             onChange={(e) => setUsername(e.target.value)} // take whatever the user typed (e.target.value) and update the username state variable
           />
@@ -74,8 +83,15 @@ const LoginForm = () => {
         </div>
 
         <div className='remember-forgot'>
-          <label><input type="checkbox" />Remember me</label>
-          {/* <a href="https://neal.fun/password-game/">Forgot password? </a> */}
+          <label>
+            <input 
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)} />
+              Remember me
+          
+          </label>
           <a onClick={() => navigate("/forgotpass")}>Forgot password?</a>
 
         </div>
@@ -83,9 +99,7 @@ const LoginForm = () => {
         <button type="submit">Login</button>
 
         <div className="register-link">
-          <p>
-            Don't have an account? <a onClick={() => navigate("/signup")}>Sign Up</a>
-          </p>
+          <p>Don't have an account? <a onClick={() => navigate("/signup")}>Sign Up</a></p>
         </div>
       </form>
     </div>
