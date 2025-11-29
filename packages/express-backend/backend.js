@@ -30,68 +30,80 @@ app.post("/login", loginUser);
 // -------------------------
 
 app.listen(process.env.PORT || port, () => {
-  console.log("REST API is listening.");
+    console.log("REST API is listening.");
 });
+
+
 
 // POST: Add a new user with random ID
 app.post("/users", authenticateUser, (req, res) => {
-  const userToAdd = req.body;
+    //app.post("/users", (req, res) => {
+    const userToAdd = req.body;
 
-  userService
-    .addUser(userToAdd)
-    .then((newUser) => res.status(201).json(newUser))
-    .catch((err) => res.status(400).send(err.message));
+    userService
+        .addUser(userToAdd)
+        .then((newUser) => res.status(201).json(newUser))
+        .catch((err) => res.status(400).send(err.message));
 });
+
+app.get("/", (req, res) => {
+    res.send("Backend is running");
+});
+
 
 // DELETE:
 app.delete("/users/:id", authenticateUser, (req, res) => {
-  const id = req.params["id"];
+    //app.delete("/users/:id", (req, res) => {
+    const id = req.params["id"];
 
-  userService
-    .findUserByIdAndDeleteIt(id)
-    .then((deletedUser) => {
-      if (!deletedUser) {
-        return res.status(404).send("Resource not found\n");
-      }
-      res.status(204).end();
-    })
-    .catch((err) => res.status(400).send(err.message));
+    userService
+        .findUserByIdAndDeleteIt(id)
+        .then((deletedUser) => {
+            if (!deletedUser) {
+                return res.status(404).send("Resource not found\n");
+            }
+            res.status(204).end();
+        })
+        .catch((err) => res.status(400).send(err.message));
 });
+
 
 // GET by ID
 app.get("/users/:id", authenticateUser, (req, res) => {
-  const id = req.params["id"]; //or req.params.id
-  userService
-    .findUserById(id)
-    .then((user) => {
-      if (!user) {
-        return res.status(404).send("Resource not found\n");
-      }
-      res.json(user);
-    })
-    .catch((err) => res.status(500).send(err.message));
+    //app.get("/users/:id", (req, res) => {
+    const id = req.params["id"]; //or req.params.id
+    userService
+        .findUserById(id)
+        .then((user) => {
+            if (!user) {
+                return res.status(404).send("Resource not found\n");
+            }
+            res.json(user);
+        })
+        .catch((err) => res.status(500).send(err.message));
 });
 
 app.get("/users", authenticateUser, (req, res) => {
-  const { name, job } = req.query;
+    //app.get("/users", (req, res) => {
+    const { name, job } = req.query;
 
-  let promise;
-  if (name && job) {
-    promise = userService.findUserByNameAndJob(name, job);
-  } else if (name) {
-    promise = userService.findUserByName(name);
-  } else if (job) {
-    promise = userService.findUserByJob(job);
-  } else {
-    promise = userService.getUsers(); // all users
-  }
+    let promise;
+    if (name && job) {
+        promise = userService.findUserByNameAndJob(name, job);
+    } else if (name) {
+        promise = userService.findUserByName(name);
+    } else if (job) {
+        promise = userService.findUserByJob(job);
+    } else {
+        promise = userService.getUsers(); // all users
+    }
 
-  promise
-    .then((users) => {
-      if (!users || users.length === 0) {
-        return res.status(404).send("Resource not found\n");
-      }
-      res.json({ users_list: users });
-    })
-    .catch((err) => res.status(500).send(err.message));
+    promise
+        .then((users) => {
+            if (!users || users.length === 0) {
+                return res.status(404).send("Resource not found\n");
+            }
+            res.json({ users_list: users });
+        })
+        .catch((err) => res.status(500).send(err.message));
 });
