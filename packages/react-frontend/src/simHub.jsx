@@ -1,28 +1,95 @@
 // src/SimHub.jsx   ← also make sure the filename & import use the same casing
 import React from "react";
-import { Link } from "react-router-dom";
+import { Outlet,Link, useNavigate } from "react-router-dom";
 
-export default function SimHub() {
+export default function SimHub({ setToken }) {
   const linkStyle = { display: "block", margin: "8px 0" };
 
+  const navigate = useNavigate();
+  function handleLogout() {
+    localStorage.removeItem("token"); // Remove token from browser
+    setToken("INVALID_TOKEN"); // Clear token in REACT state
+    navigate("/"); // Go  back to login page
+
+  }
+
   return (
-    <div style={{ padding: 24 }}>
-        <h1>CrashLab 2D — Link Hub</h1>
-        <p>Quick links:</p>
+    <div style={{ padding: 24, minHeight: "100vh", position: "relative" }}>
+      <style>
+        {`
+          .logout-button {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 10px 18px;
+            background: transparent;
+            color: #333;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s ease, border-color 0.2s ease;
+            z-index: 1000;
+          }
+      
+          .logout-button:hover {
+            background: #333;
+            border-color: #ccc;
+          }
 
-        {/* <Link to="/dashboard" style={linkStyle}>Dashboard</Link> */}
-        <Link to="/login" style={linkStyle}>Login</Link>
-        <Link to="/signup" style={linkStyle}>Sign Up</Link>
+          .nav-link {
+            display: inline-block;
+            padding: 8px 14px;
+            background: transparent;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+          }
+          
+          .nav-link:link,
+          .nav-link:visited,
+          .nav-link:hover,
+          .nav-link:active {
+            text-decoration: none
+          }
 
-        {/* slo-2d-ui pages */}
-        <hr style={{ margin: "16px 0" }} />
-        <Link to="/simulate" style={linkStyle}>Simulator</Link>
-        <Link to="/sim/driver" style={linkStyle}>Driver</Link>
-        <Link to="/sim/vehicles" style={linkStyle}>Vehicles</Link>
-        <Link to="/sim/road" style={linkStyle}>Road</Link>
-        <Link to="/sim/weather" style={linkStyle}>Weather</Link>
-        <Link to="/sim/settings" style={linkStyle}>Settings</Link>
-        <Link to="/sim/library" style={linkStyle}>Library</Link>
+          .nav-link:hover {
+            background: #333;
+            color: white;
+            border-color: #333;
+            text-decoration: none;
+          }
+        `}
+      </style>
+
+      <button className="logout-button" onClick={handleLogout}>Logout</button>
+
+      <h1 style={{ marginTop: "40px", positio: "fixed" }}>CrashLab 2D — Link Hub</h1>
+      
+      <div
+          style={{
+          display: "flex",
+          gap: "20px",
+          marginTop: "12px",
+          flexWrap: "wrap",
+          }}
+      >
+        {/* SLO-2D-UI pages */}
+        <Link to="simulate" className="nav-link">Simulator</Link>
+        <Link to="driver" className="nav-link">Driver</Link>
+        <Link to="vehicles" className="nav-link">Vehicles</Link>
+        <Link to="road" className="nav-link">Road</Link>
+        <Link to="weather" className="nav-link">Weather</Link>
+        <Link to="settings" className="nav-link">Settings</Link>
+        <Link to="library" className="nav-link">Library</Link>
+      </div>
+
+      <div style={{ marginTop: "40px"}}>
+          <Outlet/>
+      </div>
     </div>
   );
 }

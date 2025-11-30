@@ -22,8 +22,9 @@ const SignUpForm = () => {
 
     try {
       // POST request for username & password
-      const res = await fetch("https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts",
-        {
+      //const res = await fetch("https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts",
+      const res = await fetch("http://localhost:5000/accounts",
+      {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newUser),

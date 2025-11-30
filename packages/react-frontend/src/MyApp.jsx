@@ -114,46 +114,44 @@ export default function MyApp() {
   // --- Routes ---
   return (
     <BrowserRouter>
-      <nav style={{ padding: 8, display: "flex", gap: 12, flexWrap: "wrap" }}>
-        {/* <Link to="/simulate">Simulator</Link>
-        <Link to="/dashboard">Dashboard</Link>
-        <Link to="/">Login</Link>
-        <Link to="/signup">Sign Up</Link>
-        
-        {/* slo-2d-ui pages */}
-        {/* <Link to="/sim/driver">Driver</Link>
-        <Link to="/sim/vehicles">Vehicles</Link>
-        <Link to="/sim/road">Road</Link>
-        <Link to="/sim/weather">Weather</Link>
-        <Link to="/sim/settings">Settings</Link>
-        <Link to="/sim/library">Library</Link> */}
-      </nav> 
-
       <Routes>
-        {/* <Route path="/" element={<Navigate to="/sim" replace />} /> */}
-
         {/* Auth */}
         <Route path="/" element={<LoginForm setToken={setToken}/>} />
         <Route path="/signup" element={<SignUpForm setToken={setToken}/>} />
         <Route path="/forgotpass" element={<ForgotPasswordForm/>}/>
-        <Route path="/simHub" element={<SimHub />} />
-        <Route path="/reset-password" element={<ResetPasswordPage/>} />
+        {/* <Route path="/simHub" element={<SimHub setToken={setToken}/>} /> */}
+        <Route path="/simHub" element={<SimHub setToken={setToken} />}>
+          <Route path="simulate" element={<LegacySim />} />
+          <Route path="driver" element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
+          <Route path="vehicles" element={<Suspense fallback={<div>Loading…</div>}><VehiclesPage /></Suspense>} />
+          <Route path="road" element={<Suspense fallback={<div>Loading…</div>}><RoadPage /></Suspense>} />
+          <Route path="weather" element={<Suspense fallback={<div>Loading…</div>}><WeatherPage /></Suspense>} />
+          <Route path="settings" element={<Suspense fallback={<div>Loading…</div>}><SettingsPage /></Suspense>} />
+          <Route path="library" element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} />
+        </Route>
 
+
+        <Route path="/reset-password" element={<ResetPasswordPage/>} />
+        
         {/* Simulator */}
-        <Route path="/simulate" element={<LegacySim />} />
+        {/* <Route path="/simulate" element={<LegacySim />} /> */}
 
         {/* slo-2d-ui pages (lazy) */}
-        <Route path="/sim/driver"   element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
+        {/* <Route path="/sim/driver"   element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
         <Route path="/sim/vehicles" element={<Suspense fallback={<div>Loading…</div>}><VehiclesPage /></Suspense>} />
         <Route path="/sim/road"     element={<Suspense fallback={<div>Loading…</div>}><RoadPage /></Suspense>} />
         <Route path="/sim/weather"  element={<Suspense fallback={<div>Loading…</div>}><WeatherPage /></Suspense>} />
         <Route path="/sim/settings" element={<Suspense fallback={<div>Loading…</div>}><SettingsPage /></Suspense>} />
-        <Route path="/sim/library"  element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} />
+        <Route path="/sim/library"  element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} /> */}
         {/* optional */}
-        <Route path="/sim" element={<Suspense fallback={<div>Loading…</div>}><SimPage /></Suspense>} />
+        {/* <Route path="/sim" element={<Suspense fallback={<div>Loading…</div>}><SimPage /></Suspense>} /> */}
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/simulate" replace />} />
+        {/* <Route path="*" element={<Navigate to="/simulate" replace />} /> */}
+
+
+
+        
       </Routes>
     </BrowserRouter>
   );
