@@ -57,7 +57,9 @@ const LoginForm = () => {
   };
 
   return (
+    
     <div className="login-page">
+
       <form onSubmit={handleSubmit}>
         <h2>CrashLab 2D</h2>
 
