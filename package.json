@@ -7,6 +7,7 @@
         "packages/*"
     ],
     "scripts": {
+        "start": "npm run start:backend",
         "dev": "npm -w packages/react-frontend run dev",
         "dev:backend": "npm -w packages/express-backend run dev",
         "start:backend": "npm -w packages/express-backend run start",
