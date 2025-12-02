@@ -9,18 +9,26 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
 
+  // If token in localStorage, assume "Remember me" on
+  const [rememberMe, setRememberMe] = useState(
+    !!localStorage.getItem("token")
+  );
 
-  const [, setToken] = useState(localStorage.getItem("token") || ""); // don't need first value, still want setter
+  // Helper to get token form either localStorage or sessionStorage
+  const getStoredToken = () =>
+    localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+
+  const [, setToken] = useState(getStoredToken());
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch("https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts/login",
-      // const response = await fetch("http://localhost:5000/accounts/login",
-      {
+      const response = await fetch(
+        "https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts/login",
+        // http://localhost:5000/accounts/login",
+        {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -36,13 +44,16 @@ const LoginForm = () => {
 
       // If login is good (either by admin or user)
       if (response.ok) {
-        // Set token to state
+        // Store token in React state
         setToken(data.token);
 
-        // If Remember Me Checkbox is checked
         if (rememberMe) {
-          localStorage.setItem("token", data.token); // save token to localStorage
+          // if Checked, save across browser restarts:
+          localStorage.setItem("token", data.token);
+          sessionStorage.setItem("token", data.token);
         } else {
+          // Otherwise, clear when browser/tab closes
+          sessionStorage.setItem("token", data.token);
           localStorage.removeItem("token");
         }
         alert(data.message);
@@ -98,7 +109,10 @@ const LoginForm = () => {
         <button type="submit">Login</button>
 
         <div className="register-link">
-          <p>Don't have an account? <a onClick={() => navigate("/signup")}>Sign Up</a></p>
+          <p>
+            Don't have an account?{" "}
+            <a onClick={() => navigate("/signup")}>Sign Up</a>
+          </p>
         </div>
       </form>
     </div>
