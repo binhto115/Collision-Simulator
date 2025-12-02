@@ -6,9 +6,15 @@ export default function SimHub({ setToken }) {
   const navigate = useNavigate();
 
   function handleLogout() {
-    localStorage.removeItem("token"); // Remove token from browser
-    setToken("INVALID_TOKEN"); // Clear token in REACT state
-    navigate("/"); // Go  back to login page
+    // Clear both tokens
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+
+    // Clear token in REACT state
+    setToken("INVALID_TOKEN");
+    
+    // Go  back to login page
+    navigate("/");
   }
 
   return (
