@@ -91,10 +91,8 @@ const LoginForm = () => {
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)} />
               Remember me
-          
           </label>
           <a onClick={() => navigate("/forgotpass")}>Forgot password?</a>
-
         </div>
 
         <button type="submit">Login</button>
