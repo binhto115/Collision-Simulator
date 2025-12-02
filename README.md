@@ -47,4 +47,11 @@ Optional workspace settings (`.vscode/settings.json`):
 }
 ```
 
-# test CI/CD trigger
+## .env file
+
+- Make sure you move '.env' file to same directory as express-backend. Then copy paste this (remember to change the username and password)
+MONGODB_URI=mongodb+srv://atlas-user_username:atlas-user-password@crashlab-2d-simulation.1keaslo.mongodb.net/crashlab_auth?appName=CrashLab-2D-Simulation
+TOKEN_SECRET=njkdsndsknfkjdnfkdskjfnknjkfdsn
+RESET_SECRET=njkdsndsknfkjdnfkdskjfnknjkfdsn
+RESET_EMAIL=jamestopro115@gmail.com
+RESET_EMAIL_PASS=ryctiapmbrxfpwfr
