@@ -21,6 +21,7 @@ const SimPage      = lazy(() => import("./simulator/pages/SimPage")); // if pres
 
 //const BASE_URL = "http://localhost:5000";
 const BASE_URL = "https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net"
+
 // Dashboard (Table + Form)
 function Dashboard({ characters, removeOneCharacter, updateList }) {
   return (
@@ -33,7 +34,14 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 
 export default function MyApp() {
   const INVALID_TOKEN = "INVALID_TOKEN";
-  const [token, setToken] = useState(localStorage.getItem("token") || INVALID_TOKEN);
+
+  // On app load, pick up from "Remember me" or session login
+  const getStoredToken = () =>
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("token") ||
+    INVALID_TOKEN;
+
+  const [token, setToken] = useState(getStoredToken());
   const [_characters, setCharacters] = useState([]);
 
   // Helper function that adds the correct Authorization header.
@@ -66,10 +74,16 @@ export default function MyApp() {
 
   // initial load
   useEffect(() => {
-    const headers =
-      token === INVALID_TOKEN
-        ? { "Content-Type": "application/json" }
-        : { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const storedToken = getStoredToken();
+
+    // Build headers based on token existence 
+    const hasValidToken = storedToken && storedToken !== INVALID_TOKEN;
+
+    const headers = hasValidToken
+        ? { "Content-Type": "application/json",
+            Authorization: 'Bearer ${storedToken}',
+          }
+        : { "Content-Type": "application/json"};
   
     fetch(`${BASE_URL}/users`, { headers })
       .then((res) => (res.status === 200 ? res.json() : undefined))
@@ -81,7 +95,7 @@ export default function MyApp() {
         }
       })
       .catch((err) => console.log(err));
-  }, [token]);
+  }, [token]); // rerun when token changes (login/logout)
 
   // actions
   // function updateList(person) {
