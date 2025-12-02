@@ -1,9 +1,10 @@
 // src/simHub.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 
 export default function SimHub({ setToken }) {
   const navigate = useNavigate();
+  const email = location.state?.email;
 
   function handleLogout() {
     // Clear both tokens
@@ -16,6 +17,13 @@ export default function SimHub({ setToken }) {
     // Go  back to login page
     navigate("/");
   }
+
+  // If no email in current state, user didn't come from login page. Send them back to login
+  useEffect(() => {
+    if (!email) {
+      navigate("/");
+    }
+  }, [email, navigate]);
 
   return (
     <div style={{ padding: 24, minHeight: "100vh", position: "relative" }}>
@@ -72,6 +80,12 @@ export default function SimHub({ setToken }) {
       <button className="logout-button" onClick={handleLogout}>Logout</button>
 
       <h1 style={{ marginTop: "40px", positio: "fixed" }}>CrashLab 2D — Link Hub</h1>
+
+      {email && (
+        <p style={{ marginTop: "4px", marginBottom: "8px"}}>
+          Welcome {email}
+        </p>
+      )}
       
       <div
           style={{
@@ -92,7 +106,7 @@ export default function SimHub({ setToken }) {
       </div>
 
       <div style={{ marginTop: "40px"}}>
-          <Outlet/>
+        <Outlet/>
       </div>
     </div>
   );

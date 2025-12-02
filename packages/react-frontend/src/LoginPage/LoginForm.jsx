@@ -57,7 +57,7 @@ const LoginForm = () => {
           localStorage.removeItem("token");
         }
         alert(data.message);
-        navigate("/simHub");
+        navigate("/simHub", { state: { email: username} });
       } else {
         alert(data.message || "Login failed");
       }
