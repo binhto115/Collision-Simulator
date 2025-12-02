@@ -98,13 +98,13 @@ export default function SimHub({ setToken }) {
           }}
       >
         {/* SLO-2D-UI pages */}
-        <Link to="simulate" className="nav-link">Simulator</Link>
-        <Link to="driver" className="nav-link">Driver</Link>
-        <Link to="vehicles" className="nav-link">Vehicles</Link>
-        <Link to="road" className="nav-link">Road</Link>
-        <Link to="weather" className="nav-link">Weather</Link>
-        <Link to="settings" className="nav-link">Settings</Link>
-        <Link to="library" className="nav-link">Library</Link>
+        <Link to="simulate" className="nav-link" state={{ email }}>Simulator</Link>
+        <Link to="driver" className="nav-link" state={{ email }}>Driver</Link>
+        <Link to="vehicles" className="nav-link" state={{ email }}>Vehicles</Link>
+        <Link to="road" className="nav-link" state={{ email }}>Road</Link>
+        <Link to="weather" className="nav-link" state={{ email }}>Weather</Link>
+        <Link to="settings" className="nav-link" state={{ email }}>Settings</Link>
+        <Link to="library" className="nav-link" state={{ email }}>Library</Link>
       </div>
 
       <div style={{ marginTop: "40px"}}>
