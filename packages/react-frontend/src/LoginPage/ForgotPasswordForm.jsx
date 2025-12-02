@@ -26,6 +26,7 @@ const ForgotPasswordForm = () => {
         alert(data.message);
       }
     } catch (error) {
+      console.error("Error connecting to server:", error);
       alert("Error connecting to server.");
     }
   };
