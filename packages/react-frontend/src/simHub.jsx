@@ -1,9 +1,11 @@
 // src/simHub.jsx
 import React, { useEffect } from "react";
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, useLocation} from "react-router-dom";
 
 export default function SimHub({ setToken }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  
   const email = location.state?.email;
 
   function handleLogout() {
