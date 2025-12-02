@@ -10,7 +10,7 @@ const ForgotPasswordForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts/login", {
+      const res = await fetch("https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts/reset-request", {
       // const res = await fetch("http://localhost:5000/accounts/reset-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
