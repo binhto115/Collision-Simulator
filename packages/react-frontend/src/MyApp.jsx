@@ -42,8 +42,6 @@ export default function MyApp() {
     INVALID_TOKEN;
 
   const [token, setToken] = useState(getStoredToken());
-  const isAuthenticated = token && token !== INVALID_TOKEN;
-
   const [_characters, setCharacters] = useState([]);
 
   // Helper function that adds the correct Authorization header.
@@ -132,32 +130,11 @@ export default function MyApp() {
     <BrowserRouter>
       <Routes>
         {/* Auth */}
-        <Route 
-          path="/" 
-          element= {
-            isAuthenticated ? (
-              // If Remember Me
-              <Navigate to="/simHub" replace />
-            ) : (
-              <LoginForm setToken={setToken}/>
-            )
-          } />
+        <Route path="/" element={<LoginForm setToken={setToken}/>} />
         <Route path="/signup" element={<SignUpForm setToken={setToken}/>} />
         <Route path="/forgotpass" element={<ForgotPasswordForm/>}/>
         {/* <Route path="/simHub" element={<SimHub setToken={setToken}/>} /> */}
-        
-        {/* Sim Hub */}
-        <Route 
-          path="/simHub" 
-          element={
-            isAuthenticated ? (
-              <SimHub setToken = {setToken} />
-            ) : (
-              <Navigate to="/" replace />
-            )
-          }
-        >
-
+        <Route path="/simHub" element={<SimHub setToken={setToken} />}>
           <Route path="simulate" element={<LegacySim />} />
           <Route path="driver" element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
           <Route path="vehicles" element={<Suspense fallback={<div>Loading…</div>}><VehiclesPage /></Suspense>} />
