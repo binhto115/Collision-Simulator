@@ -1,16 +1,14 @@
-// src/SimHub.jsx   ← also make sure the filename & import use the same casing
+// src/simHub.jsx
 import React from "react";
-import { Outlet,Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 
 export default function SimHub({ setToken }) {
-  const linkStyle = { display: "block", margin: "8px 0" };
-
   const navigate = useNavigate();
+
   function handleLogout() {
     localStorage.removeItem("token"); // Remove token from browser
     setToken("INVALID_TOKEN"); // Clear token in REACT state
     navigate("/"); // Go  back to login page
-
   }
 
   return (
