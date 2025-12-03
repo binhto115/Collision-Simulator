@@ -19,12 +19,12 @@ function airDensity(airTempC:number, altitude_m:number){
   return rhoAlt * (288.15 / Math.max(200, T));
 }
 
-function hydroplaneSpeed_mps(psi:number){
+function hydroplaneSpeed_mps(psi:number = 35){
   // V_hydro_mph ≈ 9 * sqrt(psi)
   return 0.44704 * 9 * Math.sqrt(Math.max(psi, 1));
 }
 
-function waterMuFactor(v:number, water_mm:number, psi:number, tread_mm:number){
+function waterMuFactor(v:number, water_mm:number = 0, psi:number = 35, tread_mm:number = 6){
   if (water_mm <= 0.1) return 1;
   const Vh = hydroplaneSpeed_mps(psi) * (1 + 0.03 * (tread_mm - 3));
   if (v <= 0.6*Vh) return 1;
@@ -32,6 +32,7 @@ function waterMuFactor(v:number, water_mm:number, psi:number, tread_mm:number){
   const k = Math.min(1, Math.max(0, over)) * (water_mm/2.0);
   return Math.max(0.2, 1 - 0.8*k);
 }
+
 export function pickPhysParamsFromEnv(
   weather: Weather,
   surface: Surface = "asphalt",
@@ -65,8 +66,10 @@ export function pickPhysParamsFromEnv(
     m: mass_kg, rho: 1.225, CdA,
     Crr, grade: grade_deg * Math.PI/180,
     mu0, muSpeedDecay,
-    jerk: 80, aebTargetG: 0.95
+    jerk: 80, aebTargetG: 0.95,
+    headwind_mps, waterFilm_mm, tirePressure_psi, treadDepth_mm
   };
+
 }
 
 export function clamp(x:number, a:number, b:number){ return Math.max(a, Math.min(b, x)); }
@@ -77,19 +80,27 @@ export function stepLongitudinal(
   v:number, aCmdPrev:number, dt:number, p:PhysParams, brakeOn:boolean
 ){
   const g = 9.81;
-  let muEff = clamp(p.mu0 * (1 - p.muSpeedDecay * (v/30)), 0.05, 1.1);
-  muEff *= waterMuFactor(v, p.waterFilm_mm, p.tirePressure_psi, p.treadDepth_mm);
+ let muEff = clamp(p.mu0 * (1 - p.muSpeedDecay * (v/30)), 0.05, 1.1);
+
+// robust inputs for water/hydroplane model
+muEff *= waterMuFactor(
+  v,
+  p.waterFilm_mm ?? 0,
+  p.tirePressure_psi ?? 35,
+  p.treadDepth_mm ?? 6
+);
   const muEffClamped = clamp(muEff, 0.05, 1.1);
-  const aMax  = muEffClamped * g;
-  
-  const aTarget = brakeOn ? -Math.min(p.aebTargetG*g, aMax) : 0;
+const aMax  = muEffClamped * g;
 
-  const aCmdNext =
-    (aTarget > aCmdPrev)
-      ? Math.min(aTarget, aCmdPrev + p.jerk*dt)
-      : Math.max(aTarget, aCmdPrev - p.jerk*dt);
+const aTarget = brakeOn ? -Math.min(p.aebTargetG*g, aMax) : 0;
 
-  const v_air  = Math.max(0, v + (p.headwind_mps||0));
+
+const aCmdNext =
+  (aTarget > aCmdPrev)
+    ? Math.min(aTarget, aCmdPrev + p.jerk*dt)
+    : Math.max(aTarget, aCmdPrev - p.jerk*dt);
+
+  const v_air  = Math.max(0, v + (p.headwind_mps ?? 0));
   const drag   = 0.5 * p.rho * p.CdA * v_air*v_air / p.m;
   const roll   = p.Crr * g * Math.cos(p.grade);
   const gradeA = g * Math.sin(p.grade);
