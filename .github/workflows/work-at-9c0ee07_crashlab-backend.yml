@@ -6,7 +6,7 @@ name: Build and deploy Node.js app to Azure Web App - CrashLab-Backend
 on:
   push:
     branches:
-      - work-at-9c0ee07
+      - main
   workflow_dispatch:
 
 jobs:
