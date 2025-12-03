@@ -5,7 +5,7 @@ export default function Layout(){
     <>
       <header className="navbar">
         <div className="navbar-inner">
-          <div className="brand">🚗 CrashLab</div>
+          <div className="brand">🚗 Test Layout tsx</div>
           <nav className="nav">
             <NavLink to="/simulate">模拟</NavLink>
             <NavLink to="/vehicles">车辆</NavLink>
