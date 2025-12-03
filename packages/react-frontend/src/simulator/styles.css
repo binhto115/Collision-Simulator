@@ -1,287 +1,308 @@
-<<<<<<< HEAD
-﻿:root{
-  --bg:#fff;
-  --surface:#f7f7f8;
-  --text:#0b0f14;
-  --muted:#6b7280;
-  --primary:#0a84ff;
-  --border:#e5e7eb;
+:root{
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --accent: #0a84ff;
 }
 
-*{ box-sizing:border-box }
-html,body,#root{ height:100% }
-body{
-  margin:0;
-  color:var(--text);
-  background:var(--bg);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+
+/* Only active when Layout adds this class */
+body.simulator-theme{
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* --- Layout ------------------------------------------------------------ */
-.sim-root{
-  /* Left column takes ~half the space but never too small/large */
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 16px;
-  display: grid;
-  gap: 16px;
-  grid-template-columns: minmax(460px, 48%) 1fr;
+/* ===================== Navbar ===================== */
+
+body.simulator-theme .navbar{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 64px;
+  padding: 0 24px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  z-index: 50;
 }
 
-.sim-left{
-  min-width: 460px;
-  max-height: calc(100vh - 120px);
-  overflow: auto;
-  padding-right: 4px; /* leave room for scrollbar */
-}
-
-.sim-right .canvas-wrap{
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:12px;
-  overflow:hidden;
-}
-
-.sim-right .sim-canvas{
+body.simulator-theme .navbar-inner{
   width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Stack on small screens */
-@media (max-width: 1100px){
-  .sim-root{ grid-template-columns: 1fr; }
-  .sim-left{ max-height: unset; }
-}
-
-/* --- Cards ------------------------------------------------------------- */
-.card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:14px;
-  margin-bottom:16px;
-}
-.card h3{
-  margin:0 0 10px 0;
-  font-size:16px;
-}
-
-/* --- Form controls ----------------------------------------------------- */
-.cap{ font-weight:600; font-size:13px; }
-.help, .tip{
-  color:var(--muted);
-  font-size:12px;
-}
-.tip{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:16px; height:16px;
-  margin-left:6px;
-  border:1px solid var(--border);
-  border-radius:50%;
-  cursor:help;
-}
-
-/* grid rows */
-.row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-.row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
-.row{ display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; }
-.col{ display:flex; flex-direction:column; gap:6px; }
-
-input[type="number"], input[type="text"], select, input[type="range"]{
-  width:100%;
-  padding:8px 10px;
-  border:1px solid var(--border);
-  background:#fff;
-  border-radius:8px;
-  font-size:14px;
-}
-
-/* --- Randomize table --------------------------------------------------- */
-.rand-head{
-  display:grid;
-  grid-template-columns: 24px 1fr 120px 120px 50px;
-  gap:8px;
-  font-size:12px;
-  color:var(--muted);
-  margin:6px 0;
-}
-.rand-row{
-  display:grid;
-  grid-template-columns: 24px 1fr 120px 120px 50px;
-  gap:8px;
-  align-items:center;
-  margin:6px 0;
-}
-
-/* --- Buttons ----------------------------------------------------------- */
-.actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:8px;
-}
-button{
-  cursor:pointer;
-  border-radius:10px;
-  padding:8px 12px;
-  border:1px solid var(--border);
-  background:transparent;
-}
-button.primary{
-  background:var(--primary);
-  color:#fff;
-  border:none;
-}
-button.ghost{
-  background:transparent;
-}
-
-/* --- Little polish ----------------------------------------------------- */
-label{ display:flex; flex-direction:column; gap:6px; }
-=======
-﻿:root{
-  --bg:#fff;
-  --surface:#f7f7f8;
-  --text:#0b0f14;
-  --muted:#6b7280;
-  --primary:#0a84ff;
-  --border:#e5e7eb;
-}
-
-*{ box-sizing:border-box }
-html,body,#root{ height:100% }
-body{
-  margin:0;
-  color:var(--text);
-  background:var(--bg);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-}
-
-/* --- Layout ------------------------------------------------------------ */
-.sim-root{
-  /* Left column takes ~half the space but never too small/large */
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+body.simulator-theme .brand{
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.simulator-theme .nav{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+}
+
+body.simulator-theme .nav a{
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: #4b5563;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+body.simulator-theme .nav a:hover{
+  background: #f3f4f6;
+}
+
+body.simulator-theme .nav a.active{
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+/* spacer so content doesn't hide under fixed navbar */
+body.simulator-theme .spacer{
+  height: 64px;
+}
+
+/* ===================== Generic page layout (Vehicles / Driver / etc.) ===================== */
+
+body.simulator-theme .page{
+  min-height: calc(100vh - 64px);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px 24px;
   display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
   gap: 16px;
-  grid-template-columns: minmax(460px, 48%) 1fr;
 }
 
-.sim-left{
-  min-width: 460px;
-  max-height: calc(100vh - 120px);
-  overflow: auto;
-  padding-right: 4px; /* leave room for scrollbar */
+/* ===================== Cards & text ===================== */
+
+body.simulator-theme .card{
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 25px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.sim-right .canvas-wrap{
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:12px;
-  overflow:hidden;
+body.simulator-theme .card h3{
+  margin: 0 0 4px;
+  font-size: 16px;
 }
 
-.sim-right .sim-canvas{
+body.simulator-theme .help{
+  font-size: 13px;
+  color: var(--muted);
+}
+
+body.simulator-theme p{
+  margin: 0 0 8px;
+}
+
+/* ===================== Forms ===================== */
+
+body.simulator-theme .form-row{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+body.simulator-theme .form-row label{
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+body.simulator-theme input[type="text"],
+body.simulator-theme input[type="number"],
+body.simulator-theme input[type="email"],
+body.simulator-theme select,
+body.simulator-theme textarea{
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+  background: #ffffff;
+}
+
+body.simulator-theme input:focus,
+body.simulator-theme select:focus,
+body.simulator-theme textarea:focus{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+}
+
+/* ===================== Buttons ===================== */
+
+body.simulator-theme button{
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.simulator-theme button:disabled{
+  opacity: 0.6;
+  cursor: default;
+}
+
+body.simulator-theme .toolbar{
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body.simulator-theme button.primary{
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+body.simulator-theme button.ghost{
+  background: transparent;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+/* generic action row (used in simulator) */
+body.simulator-theme .actions{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ===================== Layout helpers ===================== */
+
+body.simulator-theme .row{
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+body.simulator-theme .row2{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.simulator-theme .row3{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.simulator-theme .col{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* small cap label used in some panels */
+body.simulator-theme .cap{
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* ===================== Tip icon ===================== */
+
+body.simulator-theme .tip{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: help;
+  user-select: none;
+}
+
+/* ===================== Randomization table ===================== */
+
+body.simulator-theme .rand-head,
+body.simulator-theme .rand-row{
+  display: grid;
+  grid-template-columns: 24px 1fr 1fr 1fr 40px;
+  gap: 6px;
+  font-size: 13px;
+  align-items: center;
+}
+
+body.simulator-theme .rand-head{
+  font-weight: 600;
+}
+
+/* ===================== Canvas wrapper ===================== */
+
+body.simulator-theme .canvas-card{
+  padding: 12px;
+}
+
+body.simulator-theme .canvas-wrap{
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  overflow: hidden;
+}
+
+/* simple table polish inside cards */
+body.simulator-theme .card table{
   width: 100%;
-  height: auto;
-  display: block;
+  border-collapse: collapse;
+  font-size: 13px;
 }
 
-/* Stack on small screens */
-@media (max-width: 1100px){
-  .sim-root{ grid-template-columns: 1fr; }
-  .sim-left{ max-height: unset; }
+body.simulator-theme .card table th,
+body.simulator-theme .card table td{
+  padding: 4px 6px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: right;
 }
 
-/* --- Cards ------------------------------------------------------------- */
-.card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:14px;
-  margin-bottom:16px;
+body.simulator-theme .card table th:first-child,
+body.simulator-theme .card table td:first-child{
+  text-align: left;
 }
-.card h3{
-  margin:0 0 10px 0;
-  font-size:16px;
-}
-
-/* --- Form controls ----------------------------------------------------- */
-.cap{ font-weight:600; font-size:13px; }
-.help, .tip{
-  color:var(--muted);
-  font-size:12px;
-}
-.tip{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:16px; height:16px;
-  margin-left:6px;
-  border:1px solid var(--border);
-  border-radius:50%;
-  cursor:help;
-}
-
-/* grid rows */
-.row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-.row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
-.row{ display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; }
-.col{ display:flex; flex-direction:column; gap:6px; }
-
-input[type="number"], input[type="text"], select, input[type="range"]{
-  width:100%;
-  padding:8px 10px;
-  border:1px solid var(--border);
-  background:#fff;
-  border-radius:8px;
-  font-size:14px;
-}
-
-/* --- Randomize table --------------------------------------------------- */
-.rand-head{
-  display:grid;
-  grid-template-columns: 24px 1fr 120px 120px 50px;
-  gap:8px;
-  font-size:12px;
-  color:var(--muted);
-  margin:6px 0;
-}
-.rand-row{
-  display:grid;
-  grid-template-columns: 24px 1fr 120px 120px 50px;
-  gap:8px;
-  align-items:center;
-  margin:6px 0;
-}
-
-/* --- Buttons ----------------------------------------------------------- */
-.actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:8px;
-}
-button{
-  cursor:pointer;
-  border-radius:10px;
-  padding:8px 12px;
-  border:1px solid var(--border);
-  background:transparent;
-}
-button.primary{
-  background:var(--primary);
-  color:#fff;
-  border:none;
-}
-button.ghost{
-  background:transparent;
-}
-
-/* --- Little polish ----------------------------------------------------- */
-label{ display:flex; flex-direction:column; gap:6px; }
->>>>>>> feature/simulator-port
