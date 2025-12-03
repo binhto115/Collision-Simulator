@@ -1,41 +1,18 @@
-name: CI Testing (work-at-9c0ee07)
+name: CI Testing
 
 on:
   push:
-    branches: [work-at-9c0ee07]
-  pull_request:
-    branches: [work-at-9c0ee07]
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    branches: [main, work-at-9c0ee07]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
-
-      - name: Use Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: npm
-
-      - name: Install (all workspaces)
-        run: npm ci
-
-      - name: Lint (backend + frontend)
-        run: npm run lint
-
-      - name: Build frontend (Vite)
-        run: npm run build
-
-      - name: Tests (if present)
-        run: |
-          npm run -w express-backend test --if-present
-          npm run -w react-frontend test --if-present
-        env:
-          NODE_ENV: test
+      - run: npm ci
+      - run: npm run -w express-backend lint
+      - run: npm run -w react-frontend lint
+      - run: npm run -w react-frontend build

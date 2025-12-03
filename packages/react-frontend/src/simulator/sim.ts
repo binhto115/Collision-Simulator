@@ -1,4 +1,4 @@
-import type { PhysParams, Weather, Surface } from "./physics";
+﻿import type { PhysParams, Weather, Surface } from "./physics";
 import { stepLongitudinal, pickPhysParamsFromEnv, kph2mps, mps2mph, clamp } from "./physics";
 
 export type Light = "daylight" | "night";

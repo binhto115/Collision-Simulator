@@ -1,11 +1,11 @@
 // auth.js
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
 const creds = []; // In-memory credential store: { username, hashedPassword }
-// const SALT_ROUNDS = 10; // adjust as needed
+//const SALT_ROUNDS = 10; // adjust as needed
 
 // Helper that returns a Promise resolving to a signed JWT
 function generateAccessToken(username) {
@@ -30,7 +30,7 @@ export function authenticateUser(req, res, next) {
     const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
-        console.log("No token received\n");
+        console.log("No token received");
         res.status(401).end();
     } else {
         jwt.verify(
@@ -53,9 +53,9 @@ export function registerUser(req, res) {
     const { username, pwd } = req.body; // from form
 
     if (!username || !pwd) {
-        res.status(400).send("Bad request: Invalid input data.\n");
+        res.status(400).send("Bad request: Invalid input data.");
     } else if (creds.find((c) => c.username === username)) {
-        res.status(409).send("Username already taken\n");
+        res.status(409).send("Username already taken");
     } else {
         bcrypt
             .genSalt(10)
@@ -63,7 +63,6 @@ export function registerUser(req, res) {
             .then((hashedPassword) => {
                 generateAccessToken(username).then((token) => {
                     console.log("Token:", token);
-                    console.log("\n")
                     res.status(201).send({ token: token });
                     creds.push({ username, hashedPassword });
                 });
@@ -80,7 +79,7 @@ export function loginUser(req, res) {
 
     if (!retrievedUser) {
         // invalid username
-        res.status(401).send("Invalid Username: Unauthorized\n");
+        res.status(401).send("Unauthorized");
     } else {
         bcrypt
             .compare(pwd, retrievedUser.hashedPassword)
@@ -91,11 +90,11 @@ export function loginUser(req, res) {
                     });
                 } else {
                     // invalid password
-                    res.status(401).send("Invalid Passowrd: Unauthorized\n");
+                    res.status(401).send("Unauthorized");
                 }
             })
             .catch(() => {
-                res.status(401).send("Unauthorized\n");
+                res.status(401).send("Unauthorized");
             });
     }
 }

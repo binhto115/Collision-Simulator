@@ -1,122 +1,127 @@
 // src/LoginPage/LoginForm.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUser, FaLock } from "react-icons/fa";
-import "./LoginForm.css";
+//import { useAuth } from "../auth/AuthContextInternal";
+import { useSafeAuth } from "../auth/useSafeAuth";
+import { API_BASE } from "../auth/AuthConfig";  
+//const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
-const LoginForm = () => {
-  // Check user log-in
+export default function LoginForm() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const auth = useSafeAuth();
 
-  // If token in localStorage, assume "Remember me" on
-  const [rememberMe, setRememberMe] = useState(
-    !!localStorage.getItem("token")
-  );
+  const [creds, setCreds] = useState({ username: "", pwd: "" });
+  const [msg, setMsg] = useState("");
 
-  // Helper to get token form either localStorage or sessionStorage
-  const getStoredToken = () =>
-    localStorage.getItem("token") || sessionStorage.getItem("token") || "";
-
-  const [, setToken] = useState(getStoredToken());
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await fetch(
-        "https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts/login",
-        // http://localhost:5000/accounts/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // When you submit the form, you use those stored values in your fetch request:
-          body: JSON.stringify({ username, pwd: password }),
-          // That’s where the inputs are actually sent to the backend.
-        }
-      );
-      
-      // Wait for backend comfirmation
-      const data = await response.json();
-
-      // If login is good (either by admin or user)
-      if (response.ok) {
-        // Store token in React state
-        setToken(data.token);
-
-        if (rememberMe) {
-          // if Checked, save across browser restarts:
-          localStorage.setItem("token", data.token);
-          sessionStorage.setItem("token", data.token);
-        } else {
-          // Otherwise, clear when browser/tab closes
-          sessionStorage.setItem("token", data.token);
-          localStorage.removeItem("token");
-        }
-        alert(data.message);
-        navigate("/simHub", { state: { email: username} });
-      } else {
-        alert(data.message || "Login failed");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occured while logging in.");
-    }
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setCreds((s) => ({ ...s, [name === "password" ? "pwd" : name]: value }));
   };
 
+  async function onSubmit(e) {
+    e.preventDefault();
+    setMsg("Logging in…");
+    try {
+      const res = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(creds),
+      });
+
+      if (res.status === 200) {
+        const { token } = await res.json();
+
+        // Prefer AuthContext if present; otherwise fall back to localStorage
+        if (auth && typeof auth.login === "function") {
+          auth.login(token);
+        } else {
+          localStorage.setItem("auth_token", token);
+        }
+
+        setMsg("Login successful. Redirecting…");
+        navigate("/dashboard", { replace: true });
+      } else {
+        const txt = await res.text();
+        setMsg(`Login failed (${res.status}). ${txt || ""}`);
+      }
+    } catch (err) {
+      setMsg(`Login error: ${String(err)}`);
+    }
+  }
+
+  // Inline styles so global CSS can't hide anything
+  const wrap = {
+    display: "grid",
+    placeItems: "center",
+    minHeight: "calc(100vh - 120px)",
+    padding: "24px 12px",
+  };
+  const card = {
+    width: "min(420px, 92vw)",
+    background: "rgba(255,255,255,0.96)",
+    border: "1px solid #e5e7eb",
+    borderRadius: 12,
+    padding: 20,
+    boxShadow: "0 8px 24px rgba(0,0,0,.08)",
+    color: "#0b0f14",
+  };
+  const title = { margin: 0, marginBottom: 12, fontSize: 22, fontWeight: 700 };
+  const form = { display: "grid", gap: 10 };
+  const label = { fontSize: 13, opacity: 0.9 };
+  const input = {
+    width: "100%",
+    padding: "10px 12px",
+    border: "1px solid #e5e7eb",
+    borderRadius: 10,
+    background: "#fff",
+    color: "#0b0f14",
+    fontSize: 14,
+  };
+  const btn = {
+    background: "#0a84ff",
+    color: "#fff",
+    border: "none",
+    padding: "10px 12px",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+    marginTop: 4,
+  };
+  const hint = { marginTop: 8, fontSize: 12, opacity: 0.75 };
+
   return (
-    
-    <div className="login-page">
-
-      <form onSubmit={handleSubmit}>
-        <h2>CrashLab 2D</h2>
-
-        <div className="input-box">
+    <div style={wrap}>
+      <div style={card}>
+        <h2 style={title}>Log in</h2>
+        <form onSubmit={onSubmit} style={form}>
+          <label htmlFor="username" style={label}>Username</label>
           <input
-            type="text"
-            placeholder="Email"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)} // take whatever the user typed (e.target.value) and update the username state variable
+            id="username"
+            name="username"
+            value={creds.username}
+            onChange={onChange}
+            style={input}
+            autoComplete="username"
+            required
           />
-          <FaUser className="icon" />
-        </div>
 
-        <div className="input-box">
+          <label htmlFor="password" style={label}>Password</label>
           <input
+            id="password"
+            name="password"
             type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={creds.pwd}
+            onChange={onChange}
+            style={input}
+            autoComplete="current-password"
+            required
           />
-          <FaLock className="icon" />
-        </div>
 
-        <div className='remember-forgot'>
-          <label>
-            <input 
-              type="checkbox"
-              id="rememberMe"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)} />
-              Remember me
-          </label>
-          <a onClick={() => navigate("/forgotpass")}>Forgot password?</a>
-        </div>
+          <button type="submit" style={btn}>Log In</button>
+        </form>
 
-        <button type="submit">Login</button>
-
-        <div className="register-link">
-          <p>
-            Don't have an account?{" "}
-            <a onClick={() => navigate("/signup")}>Sign Up</a>
-          </p>
-        </div>
-      </form>
+        {msg && <p style={hint}>{msg}</p>}
+      </div>
     </div>
   );
-};
-
-export default LoginForm;
+}
