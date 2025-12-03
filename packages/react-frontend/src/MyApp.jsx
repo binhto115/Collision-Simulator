@@ -1,26 +1,28 @@
 // src/MyApp.jsx
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
-import SimHub from "./simHub"
 import Table from "./Components/Table";
 import Form from "./Components/Form";
 import LoginForm from "./LoginPage/LoginForm";
 import SignUpForm from "./LoginPage/SignUpForm";
 import LegacySim from "./simulator/LegacySim";
-import ForgotPasswordForm from "./LoginPage/ForgotPasswordForm";
-import ResetPasswordPage from "./LoginPage/ResetPasswordPage";
 
-// --- slo-2d-ui pages (place files at: src/simulator/pages/*.tsx)
 const DriverPage   = lazy(() => import("./simulator/pages/DriverPage"));
 const VehiclesPage = lazy(() => import("./simulator/pages/VehiclesPage"));
 const RoadPage     = lazy(() => import("./simulator/pages/RoadPage"));
 const WeatherPage  = lazy(() => import("./simulator/pages/WeatherPage"));
 const SettingsPage = lazy(() => import("./simulator/pages/SettingsPage"));
 const LibraryPage  = lazy(() => import("./simulator/pages/LibraryPage"));
-const SimPage      = lazy(() => import("./simulator/pages/SimPage")); // if present
+// const SimPage   = lazy(() => import("./simulator/pages/SimPage"));
 
-//const BASE_URL = "http://localhost:5000";
-const BASE_URL = "https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net"
+const BASE_URL  = "https://collision-sim-backend-hwexdffvd3c5c7e9.westus3-01.azurewebsites.net";
+const TOKEN_KEY = "auth_token";
+
+// ------- helpers -------
+function addAuthHeader(other = {}) {
+  const t = localStorage.getItem(TOKEN_KEY);
+  return t ? { ...other, Authorization: `Bearer ${t}` } : { ...other };
+}
 
 // Dashboard (Table + Form)
 function Dashboard({ characters, removeOneCharacter, updateList }) {
@@ -33,59 +35,47 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 }
 
 export default function MyApp() {
-  const INVALID_TOKEN = "INVALID_TOKEN";
+  const [characters, setCharacters] = useState(null); // null => “Data Unavailable”
+  const [msg, setMsg] = useState("");
+  const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY));
 
-  // On app load, pick up from "Remember me" or session login
-  const getStoredToken = () =>
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("token") ||
-    INVALID_TOKEN;
 
-  const [token, setToken] = useState(getStoredToken());
-  const [_characters, setCharacters] = useState([]);
+  function saveToken(t) {
+    if (t) localStorage.setItem(TOKEN_KEY, t);
+    else localStorage.removeItem(TOKEN_KEY);
 
-  // Helper function that adds the correct Authorization header.
-  // function addAuthHeader(otherHeaders = {}) {
-  //   if (token === INVALID_TOKEN) {
-  //     return otherHeaders;
-  //   } else {
-  //     return {
-  //       ...otherHeaders,
-  //       Authorization: `Bearer ${token}`,
-  //     };
-  //   }
-  // }
+    setToken(t); // important!
+  }
 
-  // --- API helpers ---
-  // function postUser(person) {
-  //   return fetch(`${BASE_URL}/users`, {
-  //     method: "POST",
-  //     headers: addAuthHeader({ "Content-Type": "application/json" }),
-  //     body: JSON.stringify(person),
-  //   });
-  // }
+  function clearToken() {
+    localStorage.removeItem(TOKEN_KEY);
+  }
 
-  // function deleteUser(id) {
-  //   return fetch(`${BASE_URL}/users/${id}`, {
-  //     method: "DELETE",
-  //     headers: addAuthHeader({ "Content-Type": "application/json" }),
-  //   });
-  // }
+  // --- API helpers wired with Authorization header ---
+  function fetchUsers() {
+    return fetch(`${BASE_URL}/users`, {
+      headers: addAuthHeader(),
+    });
+  }
 
-  // initial load
+  function postUser(person) {
+    return fetch(`${BASE_URL}/users`, {
+      method: "POST",
+      headers: addAuthHeader({ "Content-Type": "application/json" }),
+      body: JSON.stringify(person),
+    });
+  }
+
+  function deleteUser(id) {
+    return fetch(`${BASE_URL}/users/${id}`, {
+      method: "DELETE",
+      headers: addAuthHeader(),
+    });
+  }
+
+  // initial load or when token changes
   useEffect(() => {
-    const storedToken = getStoredToken();
-
-    // Build headers based on token existence 
-    const hasValidToken = storedToken && storedToken !== INVALID_TOKEN;
-
-    const headers = hasValidToken
-        ? { "Content-Type": "application/json",
-            Authorization: 'Bearer ${storedToken}',
-          }
-        : { "Content-Type": "application/json"};
-  
-    fetch(`${BASE_URL}/users`, { headers })
+    fetchUsers()
       .then((res) => (res.status === 200 ? res.json() : undefined))
       .then((json) => {
         if (json) {
@@ -94,78 +84,113 @@ export default function MyApp() {
           setCharacters(null);
         }
       })
-      .catch((err) => console.log(err));
-  }, [token]); // rerun when token changes (login/logout)
+      .catch(() => setCharacters(null));
+  }, [token]); // re-run when token changes
 
   // actions
-  // function updateList(person) {
-  //   postUser(person)
-  //     .then((res) => {
-  //       if (res.status !== 201) throw new Error(`Expected 201, got ${res.status}`);
-  //       return res.json();
-  //     })
-  //     .then((created) => setCharacters((prev) => [...prev, created]))
-  //     .catch((err) => console.log(err));
-  // }
+  function updateList(person) {
+    postUser(person)
+      .then((res) => {
+        if (res.status !== 201) throw new Error(`Expected 201, got ${res.status}`);
+        return res.json();
+      })
+      .then((created) => setCharacters((prev) => (Array.isArray(prev) ? [...prev, created] : [created])))
+      .catch((err) => setMsg(err.message));
+  }
 
-  // function removeOneCharacter(index) {
-  //   const userToDelete = characters[index];
-  //   if (!userToDelete?._id) return;
+  function removeOneCharacter(index) {
+    const userToDelete = Array.isArray(characters) ? characters[index] : null;
+    if (!userToDelete?._id) return;
 
-  //   deleteUser(userToDelete._id)
-  //     .then((res) => {
-  //       if (res.status === 204) {
-  //         setCharacters((prev) => prev.filter((_, i) => i !== index));
-  //       } else if (res.status === 404) {
-  //         alert("Resource not found");
-  //       } else {
-  //         throw new Error(`Failed to delete user (status ${res.status})`);
-  //       }
-  //     })
-  //     .catch((err) => console.log(err));
-  // }
+    deleteUser(userToDelete._id)
+      .then((res) => {
+        if (res.status === 204) {
+          setCharacters((prev) => prev.filter((_, i) => i !== index));
+        } else if (res.status === 404) {
+          alert("Resource not found");
+        } else {
+          throw new Error(`Failed to delete user (status ${res.status})`);
+        }
+      })
+      .catch((err) => setMsg(err.message));
+  }
 
-  // --- Routes ---
+  // Small helpers to log out for testing
+  function logout() {
+    clearToken();
+    setMsg("Logged out (token cleared). Reload dashboard to verify.");
+    setCharacters(null);
+  }
+
   return (
     <BrowserRouter>
+      <nav style={{ padding: 8, display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Link to="/simulate">Simulator</Link>
+        <Link to="/dashboard">Dashboard</Link>
+        <Link to="/login">Login</Link>
+        <Link to="/signup">Sign Up</Link>
+        <button onClick={logout} style={{ marginLeft: "auto" }}>Logout</button>
+        <Link to="/sim/driver">Driver</Link>
+        <Link to="/sim/vehicles">Vehicles</Link>
+        <Link to="/sim/road">Road</Link>
+        <Link to="/sim/weather">Weather</Link>
+        <Link to="/sim/settings">Settings</Link>
+        <Link to="/sim/library">Library</Link>
+      </nav>
+
+      {msg && <div style={{ padding: "6px 12px", color: "#b91c1c" }}>{msg}</div>}
+
       <Routes>
-        {/* Auth */}
-        <Route path="/" element={<LoginForm setToken={setToken}/>} />
-        <Route path="/signup" element={<SignUpForm setToken={setToken}/>} />
-        <Route path="/forgotpass" element={<ForgotPasswordForm/>}/>
-        {/* <Route path="/simHub" element={<SimHub setToken={setToken}/>} /> */}
-        <Route path="/simHub" element={<SimHub setToken={setToken} />}>
-          <Route path="simulate" element={<LegacySim />} />
-          <Route path="driver" element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
-          <Route path="vehicles" element={<Suspense fallback={<div>Loading…</div>}><VehiclesPage /></Suspense>} />
-          <Route path="road" element={<Suspense fallback={<div>Loading…</div>}><RoadPage /></Suspense>} />
-          <Route path="weather" element={<Suspense fallback={<div>Loading…</div>}><WeatherPage /></Suspense>} />
-          <Route path="settings" element={<Suspense fallback={<div>Loading…</div>}><SettingsPage /></Suspense>} />
-          <Route path="library" element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} />
-        </Route>
+        {/* Auth — keep your existing pages, just capture token on success */}
+        <Route
+          path="/login"
+          element={
+            <LoginForm
+              onAuthSuccess={(token) => {
+                saveToken(token);
+                setMsg("Login success — token saved");
+              }}
+            />
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <SignUpForm
+              onAuthSuccess={(token) => {
+                saveToken(token);
+                setMsg("Signup success — token saved");
+              }}
+            />
+          }
+        />
 
+        {/* Dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            <Dashboard
+              characters={characters}
+              removeOneCharacter={removeOneCharacter}
+              updateList={updateList}
+            />
+          }
+        />
 
-        <Route path="/reset-password" element={<ResetPasswordPage/>} />
-        
         {/* Simulator */}
-        {/* <Route path="/simulate" element={<LegacySim />} /> */}
+        <Route path="/simulate" element={<LegacySim />} />
 
-        {/* slo-2d-ui pages (lazy) */}
-        {/* <Route path="/sim/driver"   element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
+        {/* slo-2d-ui pages */}
+        <Route path="/sim/driver"   element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
         <Route path="/sim/vehicles" element={<Suspense fallback={<div>Loading…</div>}><VehiclesPage /></Suspense>} />
         <Route path="/sim/road"     element={<Suspense fallback={<div>Loading…</div>}><RoadPage /></Suspense>} />
         <Route path="/sim/weather"  element={<Suspense fallback={<div>Loading…</div>}><WeatherPage /></Suspense>} />
         <Route path="/sim/settings" element={<Suspense fallback={<div>Loading…</div>}><SettingsPage /></Suspense>} />
-        <Route path="/sim/library"  element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} /> */}
-        {/* optional */}
+        <Route path="/sim/library"  element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} />
         {/* <Route path="/sim" element={<Suspense fallback={<div>Loading…</div>}><SimPage /></Suspense>} /> */}
 
         {/* Fallback */}
-        {/* <Route path="*" element={<Navigate to="/simulate" replace />} /> */}
-
-
-
-        
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );

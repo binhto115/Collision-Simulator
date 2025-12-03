@@ -1,4 +1,4 @@
-import "./SimLayout.css";
+﻿import "./SimLayout.css";
 //import "./styles.css";
 import { useEffect, useRef, useState } from "react";
 import { createInitialState, stepOnce, drawFrame } from "./sim";
@@ -63,53 +63,12 @@ function rnd(min:number,max:number){ return min + Math.random()*(max-min); }
 function clamp(x:number, a:number, b:number){ return Math.max(a, Math.min(b,x)); }
 function Tip({text}:{text:string}){ return <span className="tip" title={text}>?</span>; }
 
-
-// --- Export/Import types & helpers ---
-type RunExport = {
-  type: "slo2d-run";
-  version: 1;
-  savedAt: string;
-  cfg: SimConfig;
-};
-
-function downloadJSON(data: unknown, filename: string) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-// Merge with defaults and clamp a few fields so bad files can't break the sim
-function sanitizeCfg(p: Partial<SimConfig>): SimConfig {
-  const merged: SimConfig = {
-    ...defaultCfg,
-    ...p,
-  };
-  merged.fps        = clamp(Number(merged.fps), 5, 60);
-  merged.durationS  = clamp(Number(merged.durationS), 2, 20);
-  merged.cars       = Math.max(2, Math.min(3, Number(merged.cars)));
-  merged.e          = clamp(Number(merged.e), 0.05, 0.6);
-  merged.ttcTriggerS= clamp(Number(merged.ttcTriggerS), 1.0, 3.0);
-  merged.grade_deg  = clamp(Number(merged.grade_deg), -8, 8);
-  merged.zoom       = clamp(Number(merged.zoom), 0.5, 2.5);
-  return merged;
-}
-
 export default function App(){
   const [cfg, setCfg] = useState<SimConfig>(defaultCfg);
   const [running, setRunning] = useState(false);
   const [state, setState] = useState(()=>createInitialState({...defaultCfg}));
   const [rand, setRand] = useState<RandMap>(defaultRand);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
 
   function reset(){
     const c = {...cfg};                  // clone
@@ -118,43 +77,6 @@ export default function App(){
     setState(s);
     setRunning(false);
   }
-
-   function exportRun(){
-    const payload: RunExport = {
-      type: "slo2d-run",
-      version: 1,
-      savedAt: new Date().toISOString(),
-      cfg,
-    };
-    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
-    downloadJSON(payload, `slo2d-run-${stamp}.json`);
-  }
-
-  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>){
-    const f = e.target.files?.[0];
-    if (!f) return;
-    try{
-      const text = await f.text();
-      const obj = JSON.parse(text);
-      if (obj?.type !== "slo2d-run" || !obj?.cfg) {
-        throw new Error("Unrecognized file format");
-      }
-      const merged = sanitizeCfg(obj.cfg);
-      setRunning(false);
-      setCfg(merged);
-      setState(createInitialState({ ...merged }));
-    }catch(err:any){
-      alert(`Import failed: ${err?.message ?? String(err)}`);
-    }finally{
-      // allow re-importing the same file later
-      e.target.value = "";
-    }
-  }
-
-  function triggerImport(){
-    fileRef.current?.click();
-  }
-
 
   useEffect(()=>{ reset(); /* eslint-disable-next-line */ },
     [cfg.kind, cfg.weather, cfg.light, cfg.cars, cfg.zoom, cfg.fps, cfg.lenE, cfg.len1, cfg.len2, cfg.grade_deg, cfg.surface, cfg.airTempC, cfg.altitude_m, cfg.headwind_mps, cfg.waterFilm_mm, cfg.tirePressure_psi, cfg.treadDepth_mm, cfg.surfaceRoughness]);
@@ -338,15 +260,6 @@ export default function App(){
             <button className="primary" onClick={()=>setRunning(true)}>Play</button>
             <button onClick={()=>setRunning(false)}>Pause</button>
             <button onClick={()=>{ setRunning(false); reset(); }}>Reset</button>
-            <button className="ghost" onClick={exportRun}>Export</button>
-            <button onClick={triggerImport}>Import</button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".json,.txt"
-              style={{ display: "none" }}
-              onChange={handleImportFile}
-            />
           </div>
         </div>
 
