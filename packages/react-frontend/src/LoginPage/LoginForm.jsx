@@ -94,24 +94,12 @@ const LoginForm = () => {
           <FaLock className="icon" />
         </div>
 
-        <div className='remember-forgot'>
-          <label>
-            <input 
-              type="checkbox"
-              id="rememberMe"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)} />
-              Remember me
-          </label>
-          <a onClick={() => navigate("/forgotpass")}>Forgot password?</a>
-        </div>
-
         <button type="submit">Login</button>
 
         <div className="register-link">
           <p>
-            Don't have an account?{" "}
-            <a onClick={() => navigate("/signup")}>Sign Up</a>
+            <a onClick={() => navigate("/signup")}>Create Account</a>
+            <a onClick={() => navigate("/forgotpass")}>Forgot Password?</a>
           </p>
         </div>
       </form>

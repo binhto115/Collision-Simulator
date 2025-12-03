@@ -41,7 +41,7 @@ code {
 
 .login-page h3 {
     text-align: center;
-    color: #292323;
+    color: #ffffff;
 }
 
 .login-page .input-box {
@@ -73,7 +73,7 @@ code {
 
 .login-page .remember-forgot {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     font-size: 14.5px;
     margin: -15px 0 15px;
@@ -92,6 +92,8 @@ code {
 .remember-forgot a {
     color: #fff;
     text-decoration: none;
+    cursor: pointer;
+    font-weight: 600;
 }
 
 .remember-forgot a:hover {
@@ -123,7 +125,15 @@ code {
     margin: 20px 0 15px;
 }
 
-.register-link p a {
+.register-link p {
+    display: flex;
+    justify-content: space-around; /* or space-around or gap */
+    align-items: center;
+    margin-top: 10px;
+    gap: 25px; /* optional, try different values */
+}
+
+.register-link a {
     color: #fff;
     text-decoration: none;
     font-weight: 600;
@@ -132,7 +142,7 @@ code {
 .register-link p a:hover {
     text-decoration: underline;
     cursor: pointer;
-    color: #007bff;
+    color: black;
 }
 
 .login-page input[type="text"],

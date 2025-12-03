@@ -63,7 +63,7 @@ const ForgotPasswordForm = () => {
 
           <div className="register-link">
             <p>
-              Remember your password?{" "}
+              Remember password?
               <a onClick={() => navigate("/")}>Back to Login</a>
             </p>
           </div>
