@@ -11,7 +11,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
 
   // If token in localStorage, assume "Remember me" on
-  const [rememberMe, setRememberMe] = useState(
+  const [rememberMe] = useState(
     !!localStorage.getItem("token")
   );
 
