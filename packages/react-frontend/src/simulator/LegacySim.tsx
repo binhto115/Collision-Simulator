@@ -127,7 +127,7 @@ export default function App() {
   const [rand, setRand] = useState<RandMap>(defaultRand);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const prevKindRef = useRef<CCRKind>(cfg.kind);
+  //const prevKindRef = useRef<CCRKind>(cfg.kind);
 
 
     // Stores the "initial" state for the current scenario
@@ -210,13 +210,9 @@ function reset() {
 
 
     useEffect(() => {
-  const prevKind = prevKindRef.current;
-  const kindChanged = prevKind !== cfg.kind;
-  prevKindRef.current = cfg.kind;
-
-  // If Template changed, allow CCR template randomness
-  // Otherwise, keep current speeds/gaps and just recompute phys
-  reseedFromCfg(cfg, !kindChanged);
+  // Always skip the CCR template when reseeding from cfg
+  // so Template changes do NOT randomize initial conditions.
+  reseedFromCfg(cfg, true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [
   cfg.kind,
@@ -238,6 +234,7 @@ function reset() {
   cfg.treadDepth_mm,
   cfg.surfaceRoughness,
 ]);
+
 
 
   // Fixed timestep + accumulator
