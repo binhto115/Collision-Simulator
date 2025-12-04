@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { createInitialState, stepOnce, drawFrame } from "./sim";
 import type { SimConfig, CCRKind } from "./sim";
 import { kph2mps } from "./physics";
+import { useSimStore } from "./store";
+
 
 const defaultCfg: SimConfig = {
   kind: "CCRm",
@@ -26,7 +28,7 @@ const defaultCfg: SimConfig = {
   durationS: 6,
   vE0: kph2mps(50),
   vL10: kph2mps(20),
-  vL20: 0,
+  vL20: 0,  
   gap1: 25,
   gap2: 12,
   cars: 2,
@@ -62,6 +64,10 @@ const defaultRand: RandMap = {
 function rnd(min:number,max:number){ return min + Math.random()*(max-min); }
 function clamp(x:number, a:number, b:number){ return Math.max(a, Math.min(b,x)); }
 function Tip({text}:{text:string}){ return <span className="tip" title={text}>?</span>; }
+// deep clone so we can save & restore the same initial state
+function deepClone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
 
 
 // --- Export/Import types & helpers ---
@@ -102,22 +108,69 @@ function sanitizeCfg(p: Partial<SimConfig>): SimConfig {
   return merged;
 }
 
-export default function App(){
-  const [cfg, setCfg] = useState<SimConfig>(defaultCfg);
+export default function App() {
+  // 1) Read shared vehicle / road parameters from the store
+  const { vehicle, road } = useSimStore();
+
+  // 2) Initialise the sim config using those store values
+  const [cfg, setCfg] = useState<SimConfig>(() => ({
+    ...defaultCfg,
+    ...vehicle,
+    ...road,
+  }));
+
+  // 3) Normal local state
   const [running, setRunning] = useState(false);
-  const [state, setState] = useState(()=>createInitialState({...defaultCfg}));
+  const [state, setState] = useState(() =>
+    createInitialState({ ...defaultCfg, ...vehicle, ...road })
+  );
   const [rand, setRand] = useState<RandMap>(defaultRand);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const prevKindRef = useRef<CCRKind>(cfg.kind);
 
 
-  function reset(){
-    const c = {...cfg};                  // clone
-    const s = createInitialState(c);     // applies template + randomization to c
-    setCfg(c);                           // write randomized result back to UI
-    setState(s);
-    setRunning(false);
+    // Stores the "initial" state for the current scenario
+// Stores the "initial" state for the current scenario
+const baseStateRef = useRef<any | null>(null);
+
+// Build a fresh initial state from a given config (may include template logic)
+function reseedFromCfg(baseCfg: SimConfig, skipTemplate = false) {
+  // Work on a copy so we don't mutate callers' cfg
+  const c: SimConfig = { ...baseCfg };
+
+  // We sometimes want to bypass the CCR template (which is random)
+  const originalKind = c.kind;
+  if (skipTemplate) {
+    // Temporarily mark as Custom so createInitialState skips applyCCRTemplate
+    c.kind = "Custom";
   }
+
+  const s = createInitialState(c);
+
+  // Restore the actual kind for the UI / export
+  c.kind = originalKind;
+
+  // Save a clone so Reset can return to this exact state
+  baseStateRef.current = deepClone(s);
+
+  setCfg(c);
+  setState(s);
+  setRunning(false);
+}
+
+// Reset button: just restore the last generated initial state
+function reset() {
+  if (baseStateRef.current) {
+    const cloned = deepClone(baseStateRef.current);
+    setState(cloned);
+  } else {
+    // Fallback: if somehow no baseline yet, reseed from current cfg
+    reseedFromCfg(cfg, true);
+  }
+  setRunning(false);
+}
+
 
    function exportRun(){
     const payload: RunExport = {
@@ -140,9 +193,9 @@ export default function App(){
         throw new Error("Unrecognized file format");
       }
       const merged = sanitizeCfg(obj.cfg);
-      setRunning(false);
-      setCfg(merged);
-      setState(createInitialState({ ...merged }));
+
+      // IMPORTANT: skipTemplate = true so it doesn't re-randomize CCR speeds/gaps
+      reseedFromCfg(merged, true);
     }catch(err:any){
       alert(`Import failed: ${err?.message ?? String(err)}`);
     }finally{
@@ -156,8 +209,36 @@ export default function App(){
   }
 
 
-  useEffect(()=>{ reset(); /* eslint-disable-next-line */ },
-    [cfg.kind, cfg.weather, cfg.light, cfg.cars, cfg.zoom, cfg.fps, cfg.lenE, cfg.len1, cfg.len2, cfg.grade_deg, cfg.surface, cfg.airTempC, cfg.altitude_m, cfg.headwind_mps, cfg.waterFilm_mm, cfg.tirePressure_psi, cfg.treadDepth_mm, cfg.surfaceRoughness]);
+    useEffect(() => {
+  const prevKind = prevKindRef.current;
+  const kindChanged = prevKind !== cfg.kind;
+  prevKindRef.current = cfg.kind;
+
+  // If Template changed, allow CCR template randomness
+  // Otherwise, keep current speeds/gaps and just recompute phys
+  reseedFromCfg(cfg, !kindChanged);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [
+  cfg.kind,
+  cfg.weather,
+  cfg.light,
+  cfg.cars,
+  cfg.zoom,
+  cfg.fps,
+  cfg.lenE,
+  cfg.len1,
+  cfg.len2,
+  cfg.grade_deg,
+  cfg.surface,
+  cfg.airTempC,
+  cfg.altitude_m,
+  cfg.headwind_mps,
+  cfg.waterFilm_mm,
+  cfg.tirePressure_psi,
+  cfg.treadDepth_mm,
+  cfg.surfaceRoughness,
+]);
+
 
   // Fixed timestep + accumulator
   const rafRef = useRef<number|undefined>(undefined);
@@ -209,8 +290,10 @@ export default function App(){
 
   const onChange = (patch:Partial<SimConfig>) => setCfg(prev=>({...prev, ...patch}));
 
-  function randomizeOnce(){
-    const r = rand; const patch: Partial<SimConfig> = {};
+  function randomizeOnce() {
+    const r = rand;
+    const patch: Partial<SimConfig> = {};
+
     if (r["vE0_kph"].en)  patch.vE0  = kph2mps(rnd(r["vE0_kph"].min,  r["vE0_kph"].max));
     if (r["v1_0_kph"].en) patch.vL10 = kph2mps(rnd(r["v1_0_kph"].min, r["v1_0_kph"].max));
     if (cfg.cars>=3 && r["v2_0_kph"].en) patch.vL20 = kph2mps(rnd(r["v2_0_kph"].min, r["v2_0_kph"].max));
@@ -218,7 +301,7 @@ export default function App(){
     if (cfg.cars>=3 && r["gap2"].en) patch.gap2 = rnd(r["gap2"].min, r["gap2"].max);
     if (r["mE"].en)  patch.mE  = Math.round(rnd(r["mE"].min,  r["mE"].max));
     if (r["m1"].en)  patch.m1  = Math.round(rnd(r["m1"].min,  r["m1"].max));
-    if (cfg.cars>=3 && r["m2"].en)  patch.m2  = Math.round(rnd(r["m2"].min,  r["m2"].max));
+    if (cfg.cars>=3 && r["m2"].en)  patch.m2  = Math.round(rnd(r["m2"].min, r["m2"].max));
     if (r["CdAE"].en) patch.CdAE = rnd(r["CdAE"].min, r["CdAE"].max);
     if (r["CdA1"].en) patch.CdA1 = rnd(r["CdA1"].min, r["CdA1"].max);
     if (cfg.cars>=3 && r["CdA2"].en) patch.CdA2 = rnd(r["CdA2"].min, r["CdA2"].max);
@@ -226,9 +309,13 @@ export default function App(){
     if (r["ttc"].en)   patch.ttcTriggerS = rnd(r["ttc"].min, r["ttc"].max);
     if (r["leadDec"].en) patch.leadDecel1 = rnd(r["leadDec"].min, r["leadDec"].max);
     if (r["grade"].en) patch.grade_deg = Math.round(rnd(r["grade"].min, r["grade"].max));
-    setCfg(prev=>({...prev, ...patch}));
-    setRunning(false); setTimeout(()=>reset(),0);
+    const newCfg: SimConfig = { ...cfg, ...patch };
+
+    // skipTemplate = true so the CCR template does NOT override randomized values
+    reseedFromCfg(newCfg, true);
+
   }
+
 
   function toggleAllRandom(force?: boolean){
     setRand(prev=>{
@@ -257,260 +344,322 @@ export default function App(){
 
   const allSelected = Object.values(rand).every(s=>s.en);
 
-  return (
-    <div className="sim-root">
-      {/* LEFT: controls */}
-      <div className="sim-left">
-        <div className="card">
-          <h3>Scenario / Environment</h3>
-          <div className="row2">
-            <label>
-              <span className="cap">
-                Template
-                <Tip text="Euro NCAP rear-end scenarios: CCRs (stationary), CCRm (moving), CCRb (braking), or Custom."/>
-              </span>
-              <select value={cfg.kind} onChange={e=>onChange({kind:e.target.value as CCRKind})}>
-                <option>CCRs</option><option>CCRm</option><option>CCRb</option><option>Custom</option>
-              </select>
-            </label>
-            <label>
-              <span className="cap">Vehicle count</span>
-              <select value={cfg.cars} onChange={e=>onChange({cars:Number(e.target.value)})}>
-                <option value={2}>2</option><option value={3}>3</option>
-              </select>
-            </label>
-          </div>
+ return (
+  <div className="sim-root">
+        {/* LEFT: controls */}
+    <div className="sim-left">
+      {/* Scenario / Environment */}
+      <div className="card">
+        <h3>Scenario / Environment</h3>
 
-          <div className="row3">
-            <label>
-              <span className="cap">Weather</span>
-              <select value={cfg.weather} onChange={e=>onChange({weather:e.target.value as any})}>
-                <option>clear</option><option>raining</option><option>snowing</option><option>fog</option>
-              </select>
-            </label>
-            <label>
-              <span className="cap">Lighting</span>
-              <select value={cfg.light} onChange={e=>onChange({light:e.target.value as any})}>
-                <option>daylight</option><option>night</option>
-              </select>
-            </label>
-            <label>
-              <span className="cap">Grade (deg)</span>
-              <input type="number" step={1} min={-8} max={8} value={cfg.grade_deg}
-                onChange={e=>onChange({grade_deg:Number(e.target.value)})}/>
-            </label>
-          </div>
+        {/* Global toolbar: randomize + playback + import/export */}
+        <div className="actions" style={{ marginTop: 8, marginBottom: 12 }}>
+          <button className="ghost" onClick={() => toggleAllRandom()}>
+            {allSelected ? "Unselect all" : "Select all"}
+          </button>
+          <button onClick={randomizeOnce}>Randomize</button>
 
-          <div className="row3">
-            <label>
-              <span className="cap">Restitution e<Tip text="Collision coefficient of restitution: 0 = plastic, 1 = elastic."/></span>
-              <input type="number" step="0.01" min="0.05" max="0.6" value={cfg.e}
-                onChange={e=>onChange({e:Number(e.target.value)})}/>
-            </label>
-            <label>
-              <span className="cap">AEB trigger TTC (s)</span>
-              <input type="number" step="0.1" min="1.0" max="3.0" value={cfg.ttcTriggerS}
-                onChange={e=>onChange({ttcTriggerS:Number(e.target.value)})}/>
-            </label>
-            <label>
-              <span className="cap">View zoom</span>
-              <div style={{display:"grid", gridTemplateColumns:"1fr 60px 60px", gap:6}}>
-                <input type="range" min="0.5" max="2.5" step="0.1" value={cfg.zoom}
-                  onChange={e=>onChange({zoom:Number(e.target.value)})}/>
-                <button className="ghost" onClick={()=>onChange({zoom: clamp(cfg.zoom-0.1,0.5,2.5)})}>-</button>
-                <button className="ghost" onClick={()=>onChange({zoom: clamp(cfg.zoom+0.1,0.5,2.5)})}>+</button>
-              </div>
-            </label>
-          </div>
+          <button className="primary" onClick={() => setRunning(true)}>
+            Play
+          </button>
+          <button onClick={() => setRunning(false)}>Pause</button>
+          <button
+            onClick={() => {
+              setRunning(false);
+              reset();
+            }}
+          >
+            Reset
+          </button>
 
-          <div className="row3">
-            <label><span className="cap">FPS</span>
-              <input type="number" step={1} min={5} max={60} value={cfg.fps}
-                onChange={e=>onChange({fps: clamp(Number(e.target.value),5,60)})}/>
-            </label>
-            <label><span className="cap">Duration (s)</span>
-              <input type="number" step={0.5} min={2} max={20} value={cfg.durationS}
-                onChange={e=>onChange({durationS: clamp(Number(e.target.value),2,20)})}/>
-            </label>
-          </div>
+          <button className="ghost" onClick={exportRun}>
+            Export
+          </button>
+          <button onClick={triggerImport}>Import</button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".json,.txt"
+            style={{ display: "none" }}
+            onChange={handleImportFile}
+          />
+        </div>
 
-          <div className="actions">
-            <button className="primary" onClick={()=>setRunning(true)}>Play</button>
-            <button onClick={()=>setRunning(false)}>Pause</button>
-            <button onClick={()=>{ setRunning(false); reset(); }}>Reset</button>
-            <button className="ghost" onClick={exportRun}>Export</button>
-            <button onClick={triggerImport}>Import</button>
+        {/* Multi-column layout for all Scenario / Environment fields */}
+        <div className="env-grid">
+          <label>
+            <span className="cap">
+              Template
+              <Tip text="Euro NCAP rear-end scenarios: CCRs (stationary), CCRm (moving), CCRb (braking), or Custom." />
+            </span>
+            <select
+              value={cfg.kind}
+              onChange={(e) => onChange({ kind: e.target.value as CCRKind })}
+            >
+              <option>CCRs</option>
+              <option>CCRm</option>
+              <option>CCRb</option>
+              <option>Custom</option>
+            </select>
+          </label>
+
+          <label>
+            <span className="cap">Vehicle count</span>
+            <select
+              value={cfg.cars}
+              onChange={(e) => onChange({ cars: Number(e.target.value) })}
+            >
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+            </select>
+          </label>
+
+          <label>
+            <span className="cap">Weather</span>
+            <select
+              value={cfg.weather}
+              onChange={(e) => onChange({ weather: e.target.value as any })}
+            >
+              <option>clear</option>
+              <option>raining</option>
+              <option>snowing</option>
+              <option>fog</option>
+            </select>
+          </label>
+
+          <label>
+            <span className="cap">Lighting</span>
+            <select
+              value={cfg.light}
+              onChange={(e) => onChange({ light: e.target.value as any })}
+            >
+              <option>daylight</option>
+              <option>night</option>
+            </select>
+          </label>
+
+          <label>
+            <span className="cap">Grade (deg)</span>
             <input
-              ref={fileRef}
-              type="file"
-              accept=".json,.txt"
-              style={{ display: "none" }}
-              onChange={handleImportFile}
+              type="number"
+              step={1}
+              min={-8}
+              max={8}
+              value={cfg.grade_deg}
+              onChange={(e) =>
+                onChange({ grade_deg: Number(e.target.value) })
+              }
             />
-          </div>
-        </div>
+          </label>
 
-        <div className="card">
-          <h3>Initial conditions</h3>
-          <div className="row3">
-            <label><span className="cap">Ego speed (km/h)</span>
-              <input type="number" value={(cfg.vE0*3.6).toFixed(0)} onChange={e=>onChange({vE0: Number(e.target.value)/3.6})}/>
-            </label>
-            <label><span className="cap">Lead speed (km/h)</span>
-              <input type="number" value={(cfg.vL10*3.6).toFixed(0)} onChange={e=>onChange({vL10: Number(e.target.value)/3.6})}/>
-            </label>
-            {cfg.cars>=3 && (
-              <label><span className="cap">Second lead speed (km/h)</span>
-                <input type="number" value={(cfg.vL20*3.6).toFixed(0)} onChange={e=>onChange({vL20: Number(e.target.value)/3.6})}/>
-              </label>
-            )}
-            <label><span className="cap">Ego → lead gap (m)</span>
-              <input type="number" value={cfg.gap1} onChange={e=>onChange({gap1: Number(e.target.value)})}/>
-            </label>
-            {cfg.cars>=3 && (
-              <label><span className="cap">Lead → 2nd gap (m)</span>
-                <input type="number" value={cfg.gap2} onChange={e=>onChange({gap2: Number(e.target.value)})}/>
-              </label>
-            )}
-            <label><span className="cap">Lead decel (m/s²)</span>
-              <input type="number" step="0.1" value={cfg.leadDecel1} onChange={e=>onChange({leadDecel1: Number(e.target.value)})}/>
-            </label>
-          </div>
-        </div>
+          <label>
+            <span className="cap">
+              Restitution e
+              <Tip text="Collision coefficient of restitution: 0 = plastic, 1 = elastic." />
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              min="0.05"
+              max="0.6"
+              value={cfg.e}
+              onChange={(e) => onChange({ e: Number(e.target.value) })}
+            />
+          </label>
 
-        <div className="card">
-          <h3>Vehicle parameters</h3>
-          <div className="row3">
-            <label><span className="cap">Ego mass (kg)</span>
-              <input type="number" value={cfg.mE} onChange={e=>onChange({mE: Number(e.target.value)})}/>
-            </label>
-            <label><span className="cap">Lead mass (kg)</span>
-              <input type="number" value={cfg.m1} onChange={e=>onChange({m1: Number(e.target.value)})}/>
-            </label>
-            {cfg.cars>=3 && (
-              <label><span className="cap">Second mass (kg)</span>
-                <input type="number" value={cfg.m2} onChange={e=>onChange({m2: Number(e.target.value)})}/>
-              </label>
-            )}
-            <label><span className="cap">Ego CdA (m²)<Tip text="Drag coefficient × frontal area."/></span>
-              <input type="number" step="0.01" value={cfg.CdAE} onChange={e=>onChange({CdAE: Number(e.target.value)})}/>
-            </label>
-            <label><span className="cap">Lead CdA (m²)</span>
-              <input type="number" step="0.01" value={cfg.CdA1} onChange={e=>onChange({CdA1: Number(e.target.value)})}/>
-            </label>
-            {cfg.cars>=3 && (
-              <label><span className="cap">Second CdA (m²)</span>
-                <input type="number" step="0.01" value={cfg.CdA2} onChange={e=>onChange({CdA2: Number(e.target.value)})}/>
-              </label>
-            )}
-            {/* Vehicle length: ≥ 6.0 renders as truck (rendering only) */}
-            <label><span className="cap">Ego length (m)<Tip text="≥ 6.0 m renders as a truck silhouette."/></span>
-              <input type="number" step="0.1" min="2" max="18" value={cfg.lenE}
-                onChange={e=>onChange({lenE: Number(e.target.value)})}/>
-            </label>
-            <label><span className="cap">Lead length (m)</span>
-              <input type="number" step="0.1" min="2" max="18" value={cfg.len1}
-                onChange={e=>onChange({len1: Number(e.target.value)})}/>
-            </label>
-            {cfg.cars>=3 && (
-              <label><span className="cap">Second length (m)</span>
-                <input type="number" step="0.1" min="2" max="18" value={cfg.len2}
-                  onChange={e=>onChange({len2: Number(e.target.value)})}/>
-              </label>
-            )}
-          </div>
-        </div>
+          <label>
+            <span className="cap">AEB trigger TTC (s)</span>
+            <input
+              type="number"
+              step="0.1"
+              min="1.0"
+              max="3.0"
+              value={cfg.ttcTriggerS}
+              onChange={(e) =>
+                onChange({ ttcTriggerS: Number(e.target.value) })
+              }
+            />
+          </label>
 
-        <div className="card">
-          <h3>Randomize (check + set range → generate)</h3>
-          <div className="rand-head"><span></span><span>Param</span><span>Min</span><span>Max</span><span>Unit</span></div>
-          {RandRow("vE0_kph","Ego speed","km/h", 1,0)}
-          {RandRow("v1_0_kph","Lead speed","km/h", 1,0)}
-          {cfg.cars>=3 && RandRow("v2_0_kph","Second speed","km/h", 1,0)}
-          {RandRow("gap1","Ego → lead gap","m", 1,0)}
-          {cfg.cars>=3 && RandRow("gap2","Lead → 2nd gap","m", 1,0)}
-          {RandRow("mE","Ego mass","kg", 10,0)}
-          {RandRow("m1","Lead mass","kg", 10,0)}
-          {cfg.cars>=3 && RandRow("m2","Second mass","kg", 10,0)}
-          {RandRow("CdAE","Ego CdA","m²", 0.01,2)}
-          {RandRow("CdA1","Lead CdA","m²", 0.01,2)}
-          {cfg.cars>=3 && RandRow("CdA2","Second CdA","m²", 0.01,2)}
-          {RandRow("e","Restitution e","", 0.01,2)}
-          {RandRow("ttc","AEB TTC","s", 0.1,1)}
-          {RandRow("leadDec","Lead decel","m/s²", 0.1,1)}
-          {RandRow("grade","Grade","deg", 1,0)}
-          <div className="actions" style={{marginTop:8}}>
-            <button className="ghost" onClick={()=>toggleAllRandom()}>
-              {allSelected ? "Unselect all" : "Select all"}
-            </button>
-            <button onClick={randomizeOnce}>Randomize</button>
-            <button className="primary" onClick={()=>setRunning(true)}>Play</button>
-            <button onClick={()=>setRunning(false)}>Pause</button>
-            <button onClick={()=>{ setRunning(false); reset(); }}>Reset</button>
-          </div>
-        </div>
+          {/* Zoom slider spans full width */}
+          <label className="env-wide">
+            <span className="cap">View zoom</span>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 60px 60px",
+                gap: 6,
+              }}
+            >
+              <input
+                type="range"
+                min="0.5"
+                max="2.5"
+                step="0.1"
+                value={cfg.zoom}
+                onChange={(e) => onChange({ zoom: Number(e.target.value) })}
+              />
+              <button
+                className="ghost"
+                onClick={() =>
+                  onChange({ zoom: clamp(cfg.zoom - 0.1, 0.5, 2.5) })
+                }
+              >
+                -
+              </button>
+              <button
+                className="ghost"
+                onClick={() =>
+                  onChange({ zoom: clamp(cfg.zoom + 0.1, 0.5, 2.5) })
+                }
+              >
+                +
+              </button>
+            </div>
+          </label>
 
-        <div className="card">
-          <h3>Road & Conditions</h3>
-          <div className="row">
-            <div className="col">
-              <label>Surface</label>
-              <select value={cfg.surface} onChange={e=>onChange({surface: e.target.value as any})}>
-                <option value="asphalt">asphalt</option>
-                <option value="concrete">concrete</option>
-                <option value="gravel">gravel</option>
-                <option value="ice">ice</option>
-              </select>
-            </div>
-            <div className="col">
-              <label>Water film (mm)</label>
-              <input type="number" step="0.1" value={cfg.waterFilm_mm}
-                onChange={e=>onChange({waterFilm_mm: Number(e.target.value)})}/>
-            </div>
-            <div className="col">
-              <label>Tire pressure (psi)</label>
-              <input type="number" step="1" value={cfg.tirePressure_psi}
-                onChange={e=>onChange({tirePressure_psi: Number(e.target.value)})}/>
-            </div>
-            <div className="col">
-              <label>Tread depth (mm)</label>
-              <input type="number" step="0.5" value={cfg.treadDepth_mm}
-                onChange={e=>onChange({treadDepth_mm: Number(e.target.value)})}/>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col">
-              <label>Air temp (°C)</label>
-              <input type="number" step="1" value={cfg.airTempC}
-                onChange={e=>onChange({airTempC: Number(e.target.value)})}/>
-            </div>
-            <div className="col">
-              <label>Altitude (m)</label>
-              <input type="number" step="50" value={cfg.altitude_m}
-                onChange={e=>onChange({altitude_m: Number(e.target.value)})}/>
-            </div>
-            <div className="col">
-              <label>Head/tail wind (m/s)</label>
-              <input type="number" step="0.5" value={cfg.headwind_mps}
-                onChange={e=>onChange({headwind_mps: Number(e.target.value)})}/>
-            </div>
-            <div className="col">
-              <label>Surface roughness (0–1)</label>
-              <input type="number" step="0.05" min="0" max="1" value={cfg.surfaceRoughness}
-                onChange={e=>onChange({surfaceRoughness: Math.max(0, Math.min(1, Number(e.target.value)))})}/>
-            </div>
-          </div>
+          <label>
+            <span className="cap">FPS</span>
+            <input
+              type="number"
+              step={1}
+              min={5}
+              max={60}
+              value={cfg.fps}
+              onChange={(e) =>
+                onChange({ fps: clamp(Number(e.target.value), 5, 60) })
+              }
+            />
+          </label>
+
+          <label>
+            <span className="cap">Duration (s)</span>
+            <input
+              type="number"
+              step={0.5}
+              min={2}
+              max={20}
+              value={cfg.durationS}
+              onChange={(e) =>
+                onChange({ durationS: clamp(Number(e.target.value), 2, 20) })
+              }
+            />
+          </label>
         </div>
       </div>
 
-      {/* RIGHT: canvas */}
-      <div className="sim-right">
-        <div className="card canvas-card">
-          <div className="canvas-wrap">
-            <canvas ref={canvasRef} className="sim-canvas" width={1280} height={560}/>
-          </div>
+      {/* Initial conditions – now also in a multi-column grid */}
+      <div className="card">
+        <h3>Initial conditions</h3>
+        <div className="env-grid">
+          <label>
+            <span className="cap">Ego speed (km/h)</span>
+            <input
+              type="number"
+              value={(cfg.vE0 * 3.6).toFixed(0)}
+              onChange={(e) =>
+                onChange({ vE0: Number(e.target.value) / 3.6 })
+              }
+            />
+          </label>
+          <label>
+            <span className="cap">Lead speed (km/h)</span>
+            <input
+              type="number"
+              value={(cfg.vL10 * 3.6).toFixed(0)}
+              onChange={(e) =>
+                onChange({ vL10: Number(e.target.value) / 3.6 })
+              }
+            />
+          </label>
+          {cfg.cars >= 3 && (
+            <label>
+              <span className="cap">Second lead speed (km/h)</span>
+              <input
+                type="number"
+                value={(cfg.vL20 * 3.6).toFixed(0)}
+                onChange={(e) =>
+                  onChange({ vL20: Number(e.target.value) / 3.6 })
+                }
+              />
+            </label>
+          )}
+          <label>
+            <span className="cap">Ego → lead gap (m)</span>
+            <input
+              type="number"
+              value={cfg.gap1}
+              onChange={(e) => onChange({ gap1: Number(e.target.value) })}
+            />
+          </label>
+          {cfg.cars >= 3 && (
+            <label>
+              <span className="cap">Lead → 2nd gap (m)</span>
+              <input
+                type="number"
+                value={cfg.gap2}
+                onChange={(e) => onChange({ gap2: Number(e.target.value) })}
+              />
+            </label>
+          )}
+          <label>
+            <span className="cap">Lead decel (m/s²)</span>
+            <input
+              type="number"
+              step="0.1"
+              value={cfg.leadDecel1}
+              onChange={(e) =>
+                onChange({ leadDecel1: Number(e.target.value) })
+              }
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* Randomize stays here, vehicle & road moved to their own tabs */}
+      <div className="card">
+        <h3>Randomize (check + set range → generate)</h3>
+        <div className="rand-head">
+          <span></span>
+          <span>Param</span>
+          <span>Min</span>
+          <span>Max</span>
+          <span>Unit</span>
+        </div>
+        {RandRow("vE0_kph", "Ego speed", "km/h", 1, 0)}
+        {RandRow("v1_0_kph", "Lead speed", "km/h", 1, 0)}
+        {cfg.cars >= 3 && RandRow("v2_0_kph", "Second speed", "km/h", 1, 0)}
+        {RandRow("gap1", "Ego → lead gap", "m", 1, 0)}
+        {cfg.cars >= 3 && RandRow("gap2", "Lead → 2nd gap", "m", 1, 0)}
+        {RandRow("mE", "Ego mass", "kg", 10, 0)}
+        {RandRow("m1", "Lead mass", "kg", 10, 0)}
+        {cfg.cars >= 3 && RandRow("m2", "Second mass", "kg", 10, 0)}
+        {RandRow("CdAE", "Ego CdA", "m²", 0.01, 2)}
+        {RandRow("CdA1", "Lead CdA", "m²", 0.01, 2)}
+        {cfg.cars >= 3 && RandRow("CdA2", "Second CdA", "m²", 0.01, 2)}
+        {RandRow("e", "Restitution e", "", 0.01, 2)}
+        {RandRow("ttc", "AEB TTC", "s", 0.1, 1)}
+        {RandRow("leadDec", "Lead decel", "m/s²", 0.1, 1)}
+        {RandRow("grade", "Grade", "deg", 1, 0)}
+        {/* No extra actions here: all controls are in the toolbar above */}
+      </div>
+    </div>
+
+
+    {/* RIGHT: canvas */}
+    <div className="sim-right">
+      <div className="card canvas-card">
+        <div className="canvas-wrap">
+          <canvas
+            ref={canvasRef}
+            className="sim-canvas"
+            width={1280}
+            height={560}
+          />
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
 }

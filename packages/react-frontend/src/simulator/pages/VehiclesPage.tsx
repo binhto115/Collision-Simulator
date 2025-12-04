@@ -1,21 +1,106 @@
 ﻿import { useSimStore } from "../store";
-export default function VehiclesPage(){
+
+export default function VehiclesPage() {
   const { vehicle, setVehicle } = useSimStore();
+
   return (
-    <div className="page">
-      <aside className="card">
-        <h3>Vehicle Library</h3>
-        <div className="help">Choose or customize vehicle parameter（Mass、Length、CdA etc）</div>
-        <div className="form-row"><label>Vehicle name</label><input value={vehicle.name} onChange={e=>setVehicle({name:e.target.value})}/></div>
-        <div className="form-row"><label>Mass (kg)</label><input type="number" value={vehicle.mass} onChange={e=>setVehicle({mass:+e.target.value})}/></div>
-        <div className="form-row"><label>Length (m)</label><input type="number" step="0.1" value={vehicle.length} onChange={e=>setVehicle({length:+e.target.value})}/></div>
-        <div className="form-row"><label>CdA (m²)</label><input type="number" step="0.01" value={vehicle.CdA} onChange={e=>setVehicle({CdA:+e.target.value})}/></div>
-        <div className="toolbar"><button className="primary">Save as template</button><button className="ghost">Import</button></div>
-      </aside>
-      <main className="card">
-        <h3>Note</h3>
-        <p className="help">Customized paremeter will be import into the main simulator page. Will support vehicle library in the future.</p>
-      </main>
-    </div>
+    <main className="page">
+      <div className="page-section">
+        <h2>Vehicle parameters</h2>
+        <p className="help">
+          These values are shared with the Simulator. Changes here are used the
+          next time you run a scenario.
+        </p>
+
+        <div className="page-grid-3">
+          <label>
+            <span className="cap">Ego mass (kg)</span>
+            <input
+              type="number"
+              value={vehicle.mE}
+              onChange={(e) => setVehicle({ mE: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            <span className="cap">Lead mass (kg)</span>
+            <input
+              type="number"
+              value={vehicle.m1}
+              onChange={(e) => setVehicle({ m1: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            <span className="cap">Second mass (kg)</span>
+            <input
+              type="number"
+              value={vehicle.m2}
+              onChange={(e) => setVehicle({ m2: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            <span className="cap">Ego CdA (m²)</span>
+            <input
+              type="number"
+              step={0.01}
+              value={vehicle.CdAE}
+              onChange={(e) => setVehicle({ CdAE: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            <span className="cap">Lead CdA (m²)</span>
+            <input
+              type="number"
+              step={0.01}
+              value={vehicle.CdA1}
+              onChange={(e) => setVehicle({ CdA1: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            <span className="cap">Second CdA (m²)</span>
+            <input
+              type="number"
+              step={0.01}
+              value={vehicle.CdA2}
+              onChange={(e) => setVehicle({ CdA2: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            <span className="cap">Ego length (m)</span>
+            <input
+              type="number"
+              step={0.1}
+              value={vehicle.lenE}
+              onChange={(e) => setVehicle({ lenE: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            <span className="cap">Lead length (m)</span>
+            <input
+              type="number"
+              step={0.1}
+              value={vehicle.len1}
+              onChange={(e) => setVehicle({ len1: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            <span className="cap">Second length (m)</span>
+            <input
+              type="number"
+              step={0.1}
+              value={vehicle.len2}
+              onChange={(e) => setVehicle({ len2: Number(e.target.value) })}
+            />
+          </label>
+        </div>
+      </div>
+    </main>
   );
 }

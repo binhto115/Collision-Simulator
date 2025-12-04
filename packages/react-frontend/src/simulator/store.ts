@@ -1,25 +1,67 @@
 ﻿import { create } from "zustand";
 
-type Vehicle = { name:string; mass:number; length:number; CdA:number; }
-type Driver  = { reaction:number; headway:number; brakeGain:number; distractProb:number; }
-type Env     = { weather:"clear"|"raining"|"snowing"|"fog"; surface:"dry"|"wet"|"snow"|"ice"; rho:number; Crr:number; }
-type Road    = { grade_deg:number; lanes:number; radius:number; }
+// Parameters that the physics actually uses for the three cars
+export type VehicleParams = {
+  // Masses (kg)
+  mE: number;
+  m1: number;
+  m2: number;
 
-type SimStore = {
-  vehicle: Vehicle; setVehicle:(p:Partial<Vehicle>)=>void;
-  driver:  Driver;  setDriver:(p:Partial<Driver>)=>void;
-  env:     Env;     setEnv:(p:Partial<Env>)=>void;
-  road:    Road;    setRoad:(p:Partial<Road>)=>void;
+  // Drag area (CdA, m²)
+  CdAE: number;
+  CdA1: number;
+  CdA2: number;
+
+  // Vehicle lengths (m)
+  lenE: number;
+  len1: number;
+  len2: number;
 };
 
-export const useSimStore = create<SimStore>((set)=>({
-  vehicle:{ name:"Generic car", mass:1500, length:4.5, CdA:0.65 },
-  driver:{  reaction:1.0, headway:1.6, brakeGain:1.0, distractProb:0 },
-  env:{     weather:"clear", surface:"dry", rho:1.225, Crr:0.012 },
-  road:{    grade_deg:0, lanes:2, radius:500 },
+// Road / condition parameters used by the simulator
+export type RoadParams = {
+  surface: "asphalt" | "concrete" | "gravel" | "ice";
+  waterFilm_mm: number;
+  tirePressure_psi: number;
+  treadDepth_mm: number;
+  airTempC: number;
+  altitude_m: number;
+  headwind_mps: number;
+  surfaceRoughness: number;
+};
 
-  setVehicle:(p)=>set(s=>({ vehicle:{ ...s.vehicle, ...p } })),
-  setDriver:(p)=>set(s=>({  driver:{ ...s.driver,  ...p } })),
-  setEnv:(p)=>set(s=>({     env:{    ...s.env,     ...p } })),
-  setRoad:(p)=>set(s=>({    road:{   ...s.road,    ...p } })),
+type SimStore = {
+  vehicle: VehicleParams;
+  road: RoadParams;
+  setVehicle: (patch: Partial<VehicleParams>) => void;
+  setRoad: (patch: Partial<RoadParams>) => void;
+};
+
+export const useSimStore = create<SimStore>((set) => ({
+  // Defaults chosen to match defaultCfg in LegacySim.tsx
+  vehicle: {
+    mE: 1500,
+    m1: 1500,
+    m2: 1500,
+    CdAE: 0.65,
+    CdA1: 0.65,
+    CdA2: 0.65,
+    lenE: 4.5,
+    len1: 4.5,
+    len2: 4.5,
+  },
+  road: {
+    surface: "asphalt",
+    waterFilm_mm: 0,
+    tirePressure_psi: 35,
+    treadDepth_mm: 6,
+    airTempC: 20,
+    altitude_m: 0,
+    headwind_mps: 0,
+    surfaceRoughness: 0.3,
+  },
+  setVehicle: (patch) =>
+    set((state) => ({ vehicle: { ...state.vehicle, ...patch } })),
+  setRoad: (patch) =>
+    set((state) => ({ road: { ...state.road, ...patch } })),
 }));
