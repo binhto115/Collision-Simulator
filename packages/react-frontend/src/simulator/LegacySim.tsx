@@ -130,46 +130,50 @@ export default function App() {
   //const prevKindRef = useRef<CCRKind>(cfg.kind);
 
 
-    // Stores the "initial" state for the current scenario
-// Stores the "initial" state for the current scenario
-const baseStateRef = useRef<any | null>(null);
+  // Stores the "initial" state for the current scenario
+  const baseStateRef = useRef<any | null>(null);
 
-// Build a fresh initial state from a given config (may include template logic)
-function reseedFromCfg(baseCfg: SimConfig, skipTemplate = false) {
-  // Work on a copy so we don't mutate callers' cfg
-  const c: SimConfig = { ...baseCfg };
-
-  // We sometimes want to bypass the CCR template (which is random)
-  const originalKind = c.kind;
-  if (skipTemplate) {
-    // Temporarily mark as Custom so createInitialState skips applyCCRTemplate
-    c.kind = "Custom";
+  // Deep clone helper so Reset can restore exactly the same state
+  function deepClone<T>(obj: T): T {
+    return JSON.parse(JSON.stringify(obj));
   }
 
-  const s = createInitialState(c);
+  // Build a fresh initial state from a given config
+  // skipTemplate = true => DO NOT run CCR template randomness
+  function reseedFromCfg(baseCfg: SimConfig, skipTemplate = false) {
+    const c: SimConfig = { ...baseCfg };
+    const originalKind = c.kind;
 
-  // Restore the actual kind for the UI / export
-  c.kind = originalKind;
+    if (skipTemplate) {
+      // Force Custom so createInitialState skips CCR template randomness
+      c.kind = "Custom";
+    }
 
-  // Save a clone so Reset can return to this exact state
-  baseStateRef.current = deepClone(s);
+    const s = createInitialState(c);
 
-  setCfg(c);
-  setState(s);
-  setRunning(false);
-}
+    // Restore the actual template label for UI/export
+    c.kind = originalKind;
 
-// Reset button: just restore the last generated initial state
-function reset() {
-  if (baseStateRef.current) {
-    const cloned = deepClone(baseStateRef.current);
-    setState(cloned);
-  } else {
-    // Fallback: if somehow no baseline yet, reseed from current cfg
-    reseedFromCfg(cfg, true);
+    // Save baseline so Reset can restore this exact scenario
+    baseStateRef.current = deepClone(s);
+
+    setCfg(c);
+    setState(s);
+    setRunning(false);
   }
-  setRunning(false);
-}
+
+  // Reset button: restore the last baseline state exactly
+  function reset() {
+    if (baseStateRef.current) {
+      const cloned = deepClone(baseStateRef.current);
+      setState(cloned);
+    } else {
+      // Safety fallback: if no baseline yet, build one from current cfg
+      reseedFromCfg(cfg, true);
+    }
+    setRunning(false);
+  }
+
 
 
    function exportRun(){
@@ -209,31 +213,38 @@ function reset() {
   }
 
 
-    useEffect(() => {
-  // Always skip the CCR template when reseeding from cfg
-  // so Template changes do NOT randomize initial conditions.
-  reseedFromCfg(cfg, true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [
-  cfg.kind,
-  cfg.weather,
-  cfg.light,
-  cfg.cars,
-  cfg.zoom,
-  cfg.fps,
-  cfg.lenE,
-  cfg.len1,
-  cfg.len2,
-  cfg.grade_deg,
-  cfg.surface,
-  cfg.airTempC,
-  cfg.altitude_m,
-  cfg.headwind_mps,
-  cfg.waterFilm_mm,
-  cfg.tirePressure_psi,
-  cfg.treadDepth_mm,
-  cfg.surfaceRoughness,
-]);
+      useEffect(() => {
+    // Rebuild the scenario whenever any scenario/initial-condition field changes.
+    // We pass skipTemplate = true so CCR templates don't re-randomize things.
+    reseedFromCfg(cfg, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    // Scenario / environment
+    cfg.kind,
+    cfg.weather,
+    cfg.light,
+    cfg.cars,
+    cfg.zoom,
+    cfg.fps,
+    cfg.grade_deg,
+    cfg.surface,
+    cfg.airTempC,
+    cfg.altitude_m,
+    cfg.headwind_mps,
+    cfg.waterFilm_mm,
+    cfg.tirePressure_psi,
+    cfg.treadDepth_mm,
+    cfg.surfaceRoughness,
+
+    // Initial conditions (THIS is what fixes your bug)
+    cfg.vE0,
+    cfg.vL10,
+    cfg.vL20,
+    cfg.gap1,
+    cfg.gap2,
+    cfg.leadDecel1,
+  ]);
+
 
 
 
