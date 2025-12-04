@@ -11,13 +11,13 @@ import ForgotPasswordForm from "./LoginPage/ForgotPasswordForm";
 import ResetPasswordPage from "./LoginPage/ResetPasswordPage";
 
 // --- slo-2d-ui pages (place files at: src/simulator/pages/*.tsx)
-const DriverPage   = lazy(() => import("./simulator/pages/DriverPage"));
+//const DriverPage   = lazy(() => import("./simulator/pages/DriverPage"));
 const VehiclesPage = lazy(() => import("./simulator/pages/VehiclesPage"));
 const RoadPage     = lazy(() => import("./simulator/pages/RoadPage"));
-const WeatherPage  = lazy(() => import("./simulator/pages/WeatherPage"));
-const SettingsPage = lazy(() => import("./simulator/pages/SettingsPage"));
-const LibraryPage  = lazy(() => import("./simulator/pages/LibraryPage"));
-const SimPage      = lazy(() => import("./simulator/pages/SimPage")); // if present
+//const WeatherPage  = lazy(() => import("./simulator/pages/WeatherPage"));
+//const SettingsPage = lazy(() => import("./simulator/pages/SettingsPage"));
+//const LibraryPage  = lazy(() => import("./simulator/pages/LibraryPage"));
+//const SimPage      = lazy(() => import("./simulator/pages/SimPage")); // if present
 
 //const BASE_URL = "http://localhost:5000";
 const BASE_URL = "https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net"
@@ -136,12 +136,12 @@ export default function MyApp() {
         {/* <Route path="/simHub" element={<SimHub setToken={setToken}/>} /> */}
         <Route path="/simHub" element={<SimHub setToken={setToken} />}>
           <Route path="simulate" element={<LegacySim />} />
-          <Route path="driver" element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} />
+          {/* <Route path="driver" element={<Suspense fallback={<div>Loading…</div>}><DriverPage /></Suspense>} /> */}
           <Route path="vehicles" element={<Suspense fallback={<div>Loading…</div>}><VehiclesPage /></Suspense>} />
           <Route path="road" element={<Suspense fallback={<div>Loading…</div>}><RoadPage /></Suspense>} />
-          <Route path="weather" element={<Suspense fallback={<div>Loading…</div>}><WeatherPage /></Suspense>} />
+          {/* <Route path="weather" element={<Suspense fallback={<div>Loading…</div>}><WeatherPage /></Suspense>} />
           <Route path="settings" element={<Suspense fallback={<div>Loading…</div>}><SettingsPage /></Suspense>} />
-          <Route path="library" element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} />
+          <Route path="library" element={<Suspense fallback={<div>Loading…</div>}><LibraryPage /></Suspense>} /> */}
         </Route>
 
 
