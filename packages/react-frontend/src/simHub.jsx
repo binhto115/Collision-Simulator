@@ -17,13 +17,13 @@ export default function SimHub({ setToken }) {
     setToken("INVALID_TOKEN");
     
     // Go  back to login page
-    navigate("/");
+    navigate("/", { replace: true });
   }
 
   // If no email in current state, user didn't come from login page. Send them back to login
   useEffect(() => {
-    if (!email) {
-      navigate("/");
+      if (!token || token == "INVALID_TOKEN" || !email) {
+      navigate("/", { replace: true});
     }
   }, [email, navigate]);
 
@@ -81,7 +81,7 @@ export default function SimHub({ setToken }) {
 
       <button className="logout-button" onClick={handleLogout}>Logout</button>
 
-      <h1 style={{ marginTop: "40px", positio: "fixed" }}>CrashLab 2D — Link Hub</h1>
+      <h1 style={{ marginTop: "40px", position: "fixed" }}>CrashLab 2D — Link Hub</h1>
 
       {email && (
         <p style={{ marginTop: "4px", marginBottom: "8px"}}>
