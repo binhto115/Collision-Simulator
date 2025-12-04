@@ -83,7 +83,7 @@ export default function SimHub({ setToken }) {
 
       <button className="logout-button" onClick={handleLogout}>Logout</button>
 
-      <h1 style={{ marginTop: "40px", position: "fixed" }}>CrashLab 2D — Link Hub</h1>
+      <h1 style={{ marginTop: "40px", positio: "fixed" }}>CrashLab 2D — Link Hub</h1>
 
       {email && (
         <p style={{ marginTop: "4px", marginBottom: "8px"}}>
