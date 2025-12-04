@@ -22,6 +22,8 @@ export default function SimHub({ setToken }) {
 
   // If no email in current state, user didn't come from login page. Send them back to login
   useEffect(() => {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      // If no token or invalid token on logout, then log out
       if (!token || token == "INVALID_TOKEN" || !email) {
       navigate("/", { replace: true});
     }
