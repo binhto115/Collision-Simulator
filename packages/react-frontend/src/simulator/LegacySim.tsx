@@ -253,6 +253,9 @@ export default function App() {
   const lastRef = useRef<number>(0);
   const accRef  = useRef<number>(0);
 
+    //const simElapsedRef = useRef<number>(0);
+
+
   useEffect(()=>{
     if (!running){
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -540,7 +543,7 @@ export default function App() {
             />
           </label>
 
-          <label>
+          {/* <label>
             <span className="cap">Duration (s)</span>
             <input
               type="number"
@@ -552,7 +555,7 @@ export default function App() {
                 onChange({ durationS: clamp(Number(e.target.value), 2, 20) })
               }
             />
-          </label>
+          </label> */}
         </div>
       </div>
 
