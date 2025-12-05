@@ -140,7 +140,7 @@ curl -i http://localhost:8000/users \
 * **Mongo auth error** → Verify `MONGO_URI` username/password and DB name in `.env`.
 * **Mermaid not rendering on GitHub** → Each diagram must be in its **own** fenced block starting with ```mermaid.
 
-## How to run 
+## How to run Jest Testing
 ```bash
 npm test
 ```
