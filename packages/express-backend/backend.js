@@ -10,7 +10,7 @@ import express from "express";
 import cors from "cors";
 // import userService from "./models/user-services.js";
 import accountsRouter from "./accounts.js";
-import { registerUser, loginUser, authenticateUser } from "./auth.js";
+import { registerUser, loginUser } from "./auth.js";
 
 const app = express();
 const port = 5000;
