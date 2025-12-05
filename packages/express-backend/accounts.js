@@ -31,7 +31,7 @@ router.post("/reset-request", async(req, res) => {
             return res.status(404).json({ message: "User not found." })
         }
 
-        // Create a token that expires in 15 minutes
+        // Create a token that expires in 10 minutes
         const resetToken = jwt.sign({ username },
             process.env.RESET_SECRET, { expiresIn: "10m" }
         );
@@ -116,7 +116,7 @@ router.post("/", async(req, res) => {
             return res.status(409).json({ message: "Username already exists." });
         }
 
-        // ✅ HASH HERE
+        // HASH HERE
         const salt = await bcrypt.genSalt(10);
         const hashed = await bcrypt.hash(pwd, salt);
 
