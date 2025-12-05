@@ -53,7 +53,6 @@ app.get("/", (req, res) => {
 
 // DELETE:
 app.delete("/users/:id", authenticateUser, (req, res) => {
-    //app.delete("/users/:id", (req, res) => {
     const id = req.params["id"];
 
     userService
@@ -70,8 +69,7 @@ app.delete("/users/:id", authenticateUser, (req, res) => {
 
 // GET by ID
 app.get("/users/:id", authenticateUser, (req, res) => {
-    //app.get("/users/:id", (req, res) => {
-    const id = req.params["id"]; //or req.params.id
+    const id = req.params["id"];
     userService
         .findUserById(id)
         .then((user) => {
@@ -84,7 +82,6 @@ app.get("/users/:id", authenticateUser, (req, res) => {
 });
 
 app.get("/users", authenticateUser, (req, res) => {
-    //app.get("/users", (req, res) => {
     const { name, job } = req.query;
 
     let promise;
