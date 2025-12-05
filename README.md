@@ -141,7 +141,9 @@ curl -i http://localhost:8000/users \
 * **Mermaid not rendering on GitHub** → Each diagram must be in its **own** fenced block starting with ```mermaid.
 
 ## How to run 
-```bash npm test```
+```bash
+npm test
+```
 Install the following:
 
 - This package installs jest
