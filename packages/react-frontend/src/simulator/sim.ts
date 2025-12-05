@@ -120,10 +120,10 @@ export function stepOnce(state:SimState, cfg:SimConfig){
   if (cfg.cars>=3 && centerGap2 < centerGapAhead){ centerGapAhead = centerGap2; relVAhead = s.vE - s.v2; combLenAhead = (s.lenE + s.len2)/2; }
   const TTC = relVAhead>0 ? ((centerGapAhead - combLenAhead)/relVAhead) : Infinity;
 
-  // ✅ respect reaction delay; avoid instant full brake at t=0
+  // respect reaction delay; avoid instant full brake at t=0
   const brakeOnEgo = (s.t >= (cfg.reactionDelayS ?? 0)) && (TTC < cfg.ttcTriggerS);
 
-  // Ego with physics + AEB; ✅ clamp to non-negative velocity
+  // Ego with physics + AEB; clamp to non-negative velocity
   const stE = stepLongitudinal(s.vE, s.aE, dt, pE, brakeOnEgo);
   s.vE = Math.max(0, stE.vNext);
   s.aE = stE.aCmdNext;
@@ -131,7 +131,7 @@ export function stepOnce(state:SimState, cfg:SimConfig){
   // Lead behavior by CCR mode
   if (cfg.kind === "CCRb" && cfg.leadDecel1 < 0) {
     const st1 = stepLongitudinal(s.v1, cfg.leadDecel1, dt, p1, /*brakeOn=*/false);
-    s.v1 = Math.max(0, st1.vNext);           // ✅ no reverse for lead either
+    s.v1 = Math.max(0, st1.vNext);           // no reverse for lead either
   } else if (cfg.kind === "CCRs") {
     s.v1 = 0;
   } else {
