@@ -139,3 +139,26 @@ curl -i http://localhost:8000/users \
 * **CORS errors** → Backend must allow origin `http://localhost:5173` and header `Authorization`.
 * **Mongo auth error** → Verify `MONGO_URI` username/password and DB name in `.env`.
 * **Mermaid not rendering on GitHub** → Each diagram must be in its **own** fenced block starting with ```mermaid.
+
+## How to run 
+```bash npm test```
+Install the following:
+
+- This package installs jest
+```bash
+npm install jest
+```
+
+- This package installs required testing packages
+```bash
+npm install --save-dev @testing-library/react @testing-library/jest-dom jest-environment-jsdom
+```
+- This package allows jest to run both. ts and .jsx
+```bash
+npm install --save-dev babel-jest @babel/core @babel/preset-env @babel/preset-react
+```
+- This package gives Jest a simple object to stand in for imported CSS modules.
+```bash
+npm install --save-dev identity-obj-proxy
+```
+
