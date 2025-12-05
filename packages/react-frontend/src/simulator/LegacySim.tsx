@@ -35,7 +35,7 @@ const defaultCfg: SimConfig = {
   grade_deg: 0,
   mE: 1500, m1: 1500, m2: 1500,
   CdAE: 0.65, CdA1: 0.65, CdA2: 0.65,
-  // Vehicle length (m). ≥ 6.0 renders as a truck silhouette (rendering only).
+  // Vehicle length (m). ≥ 6.0 renders as a truck silhouette
   lenE: 4.5, len1: 4.5, len2: 4.5,
   zoom: 1.0
 };
@@ -64,13 +64,11 @@ const defaultRand: RandMap = {
 function rnd(min:number,max:number){ return min + Math.random()*(max-min); }
 function clamp(x:number, a:number, b:number){ return Math.max(a, Math.min(b,x)); }
 function Tip({text}:{text:string}){ return <span className="tip" title={text}>?</span>; }
-// deep clone so we can save & restore the same initial state
 function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
 
 
-// --- Export/Import types & helpers ---
 type RunExport = {
   type: "slo2d-run";
   version: 1;
@@ -92,7 +90,6 @@ function downloadJSON(data: unknown, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-// Merge with defaults and clamp a few fields so bad files can't break the sim
 function sanitizeCfg(p: Partial<SimConfig>): SimConfig {
   const merged: SimConfig = {
     ...defaultCfg,
@@ -109,17 +106,13 @@ function sanitizeCfg(p: Partial<SimConfig>): SimConfig {
 }
 
 export default function App() {
-  // 1) Read shared vehicle / road parameters from the store
   const { vehicle, road } = useSimStore();
-
-  // 2) Initialise the sim config using those store values
   const [cfg, setCfg] = useState<SimConfig>(() => ({
     ...defaultCfg,
     ...vehicle,
     ...road,
   }));
 
-  // 3) Normal local state
   const [running, setRunning] = useState(false);
   const [state, setState] = useState(() =>
     createInitialState({ ...defaultCfg, ...vehicle, ...road })
@@ -133,25 +126,20 @@ export default function App() {
   // Stores the "initial" state for the current scenario
   const baseStateRef = useRef<any | null>(null);
 
-  // Deep clone helper so Reset can restore exactly the same state
   function deepClone<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj));
   }
 
-  // Build a fresh initial state from a given config
-  // skipTemplate = true => DO NOT run CCR template randomness
   function reseedFromCfg(baseCfg: SimConfig, skipTemplate = false) {
     const c: SimConfig = { ...baseCfg };
     const originalKind = c.kind;
 
     if (skipTemplate) {
-      // Force Custom so createInitialState skips CCR template randomness
       c.kind = "Custom";
     }
 
     const s = createInitialState(c);
 
-    // Restore the actual template label for UI/export
     c.kind = originalKind;
 
     // Save baseline so Reset can restore this exact scenario
@@ -162,13 +150,11 @@ export default function App() {
     setRunning(false);
   }
 
-  // Reset button: restore the last baseline state exactly
   function reset() {
     if (baseStateRef.current) {
       const cloned = deepClone(baseStateRef.current);
       setState(cloned);
     } else {
-      // Safety fallback: if no baseline yet, build one from current cfg
       reseedFromCfg(cfg, true);
     }
     setRunning(false);
@@ -198,12 +184,11 @@ export default function App() {
       }
       const merged = sanitizeCfg(obj.cfg);
 
-      // IMPORTANT: skipTemplate = true so it doesn't re-randomize CCR speeds/gaps
       reseedFromCfg(merged, true);
     }catch(err:any){
       alert(`Import failed: ${err?.message ?? String(err)}`);
     }finally{
-      // allow re-importing the same file later
+      
       e.target.value = "";
     }
   }
@@ -214,12 +199,11 @@ export default function App() {
 
 
       useEffect(() => {
-    // Rebuild the scenario whenever any scenario/initial-condition field changes.
-    // We pass skipTemplate = true so CCR templates don't re-randomize things.
+   
     reseedFromCfg(cfg, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [
-    // Scenario / environment
+    
     cfg.kind,
     cfg.weather,
     cfg.light,
@@ -235,8 +219,6 @@ export default function App() {
     cfg.tirePressure_psi,
     cfg.treadDepth_mm,
     cfg.surfaceRoughness,
-
-    // Initial conditions (THIS is what fixes your bug)
     cfg.vE0,
     cfg.vL10,
     cfg.vL20,
@@ -246,14 +228,9 @@ export default function App() {
   ]);
 
 
-
-
-  // Fixed timestep + accumulator
   const rafRef = useRef<number|undefined>(undefined);
   const lastRef = useRef<number>(0);
   const accRef  = useRef<number>(0);
-
-    //const simElapsedRef = useRef<number>(0);
 
 
   useEffect(()=>{
@@ -285,7 +262,6 @@ export default function App() {
     return ()=>{ if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [running, cfg.fps, cfg.ttcTriggerS, cfg.leadDecel1, cfg.muOverride, cfg.weather, cfg.grade_deg]);
 
-  // Wheel zoom (hold Ctrl/Shift)
   useEffect(()=>{
     const el = canvasRef.current;
     if (!el) return;
@@ -322,7 +298,6 @@ export default function App() {
     if (r["grade"].en) patch.grade_deg = Math.round(rnd(r["grade"].min, r["grade"].max));
     const newCfg: SimConfig = { ...cfg, ...patch };
 
-    // skipTemplate = true so the CCR template does NOT override randomized values
     reseedFromCfg(newCfg, true);
 
   }
@@ -357,13 +332,12 @@ export default function App() {
 
  return (
   <div className="sim-root">
-        {/* LEFT: controls */}
     <div className="sim-left">
       {/* Scenario / Environment */}
       <div className="card">
         <h3>Scenario / Environment</h3>
 
-        {/* Global toolbar: randomize + playback + import/export */}
+        {/* randomize,playback,import/export */}
         <div className="actions" style={{ marginTop: 8, marginBottom: 12 }}>
           <button className="ghost" onClick={() => toggleAllRandom()}>
             {allSelected ? "Unselect all" : "Select all"}
@@ -396,7 +370,7 @@ export default function App() {
           />
         </div>
 
-        {/* Multi-column layout for all Scenario / Environment fields */}
+        {/* Multicolumn layout for Scenario / Environment fields */}
         <div className="env-grid">
           <label>
             <span className="cap">
@@ -492,7 +466,6 @@ export default function App() {
             />
           </label>
 
-          {/* Zoom slider spans full width */}
           <label className="env-wide">
             <span className="cap">View zoom</span>
             <div
@@ -559,7 +532,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Initial conditions – now also in a multi-column grid */}
+      {/* Initial conditions */}
       <div className="card">
         <h3>Initial conditions</h3>
         <div className="env-grid">
@@ -627,7 +600,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Randomize stays here, vehicle & road moved to their own tabs */}
+      {/* Randomize */}
       <div className="card">
         <h3>Randomize (check + set range → generate)</h3>
         <div className="rand-head">
@@ -652,12 +625,10 @@ export default function App() {
         {RandRow("ttc", "AEB TTC", "s", 0.1, 1)}
         {RandRow("leadDec", "Lead decel", "m/s²", 0.1, 1)}
         {RandRow("grade", "Grade", "deg", 1, 0)}
-        {/* No extra actions here: all controls are in the toolbar above */}
       </div>
     </div>
 
 
-    {/* RIGHT: canvas */}
     <div className="sim-right">
       <div className="card canvas-card">
         <div className="canvas-wrap">

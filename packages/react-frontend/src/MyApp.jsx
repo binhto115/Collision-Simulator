@@ -1,4 +1,3 @@
-// src/MyApp.jsx
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import SimHub from "./simHub"
@@ -10,7 +9,6 @@ import LegacySim from "./simulator/LegacySim";
 import ForgotPasswordForm from "./LoginPage/ForgotPasswordForm";
 import ResetPasswordPage from "./LoginPage/ResetPasswordPage";
 
-// --- slo-2d-ui pages (place files at: src/simulator/pages/*.tsx)
 //const DriverPage   = lazy(() => import("./simulator/pages/DriverPage"));
 const VehiclesPage = lazy(() => import("./simulator/pages/VehiclesPage"));
 const RoadPage     = lazy(() => import("./simulator/pages/RoadPage"));
@@ -35,7 +33,6 @@ function Dashboard({ characters, removeOneCharacter, updateList }) {
 export default function MyApp() {
   const INVALID_TOKEN = "INVALID_TOKEN";
 
-  // On app load, pick up from "Remember me" or session login
   const getStoredToken = () =>
     localStorage.getItem("token") ||
     sessionStorage.getItem("token") ||
@@ -72,11 +69,9 @@ export default function MyApp() {
   //   });
   // }
 
-  // initial load
   useEffect(() => {
     const storedToken = getStoredToken();
 
-    // Build headers based on token existence 
     const hasValidToken = storedToken && storedToken !== INVALID_TOKEN;
 
     const headers = hasValidToken
@@ -95,7 +90,7 @@ export default function MyApp() {
         }
       })
       .catch((err) => console.log(err));
-  }, [token]); // rerun when token changes (login/logout)
+  }, [token]); 
 
   // actions
   // function updateList(person) {
@@ -125,7 +120,6 @@ export default function MyApp() {
   //     .catch((err) => console.log(err));
   // }
 
-  // --- Routes ---
   return (
     <BrowserRouter>
       <Routes>

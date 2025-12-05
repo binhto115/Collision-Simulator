@@ -13,7 +13,7 @@ export interface PhysParams {
 
 function airDensity(airTempC:number, altitude_m:number){
   const T = airTempC + 273.15;
-  const rho0 = 1.225;            // 15°C @ sea level
+  const rho0 = 1.225;            // 15°C at sea level
   const scaleH = 8500;
   const rhoAlt = rho0 * Math.exp(-altitude_m/scaleH);
   return rhoAlt * (288.15 / Math.max(200, T));
@@ -95,7 +95,6 @@ export function stepLongitudinal(
 ) {
   const g = 9.81;
 
-  // --- Robust params / defaults ---
   const m      = Math.max(1, Number.isFinite(p.m) ? p.m : 1500);
   const rho    = Number.isFinite(p.rho) ? p.rho : 1.225;
   const CdA    = Number.isFinite(p.CdA) ? p.CdA : 0.65;
@@ -111,16 +110,16 @@ export function stepLongitudinal(
   const tirePsi        = Number.isFinite(p.tirePressure_psi) ? p.tirePressure_psi : 35;
   const tread_mm       = Number.isFinite(p.treadDepth_mm) ? p.treadDepth_mm : 6;
 
-  // --- Friction model (speed loss + wet factor) ---
+  // Friction model
   let muEff = clamp(mu0 * (1 - muDec * (v / 30)), 0.05, 1.1);
   muEff *= waterMuFactor(v, waterFilm_mm, tirePsi, tread_mm);
   muEff = clamp(muEff, 0.05, 1.1);
   const aMax = muEff * g;
 
-  // --- AEB target decel; capped by traction limit ---
+  // AEB target decel; capped by traction limit
   const aTarget = brakeOn ? -Math.min(aebG * g, aMax) : 0;
 
-  // --- Jerk-limited command (faster to apply brakes, gentler to release) ---
+  // Jerk-limited command (faster to apply brakes, gentler to release)
   const jerkApply   = jerk * 1.0;  // toward more negative (apply brake)
   const jerkRelease = jerk * 0.6;  // toward zero (release brake)
   let aCmdNext = aCmdPrev;
@@ -130,7 +129,7 @@ export function stepLongitudinal(
     aCmdNext = Math.min(aTarget, aCmdPrev + jerkRelease * dt);
   }
 
-  // --- Resistance accelerations helper ---
+  // Resistance accelerations helper
   const resAccel = (vel: number) => {
     const v_air = Math.max(0, vel + headwind);
     const aDrag  = (0.5 * rho * CdA * v_air * v_air) / m;      // always opposing motion
@@ -140,17 +139,15 @@ export function stepLongitudinal(
     return { aDrag, aRoll, aGrade, aRes };
   };
 
-  // --- Heun / RK2 averaging for resistance (better than plain Euler) ---
   const r0 = resAccel(v);
   const vPredict = Math.max(0, v + (aCmdNext + r0.aRes) * dt);
   const r1 = resAccel(vPredict);
   const aResAvg = 0.5 * (r0.aRes + r1.aRes);
 
-  // --- Integrate velocity, clamp & “stick” near zero to avoid chatter ---
   let vNext = v + (aCmdNext + aResAvg) * dt;
   if (vNext < 0.05 && (aCmdNext + aResAvg) < 0) {
     vNext = 0;
-    aCmdNext = 0; // stop commanding negative accel when already at rest
+    aCmdNext = 0; 
   }
   vNext = Math.max(0, vNext);
 
@@ -159,7 +156,6 @@ export function stepLongitudinal(
     aCmdNext,
     muEff,
     aMax,
-    // optional debug fields (safe to ignore by callers)
     aRes: aResAvg,
     aDrag: r0.aDrag,
     aRoll: r0.aRoll,

@@ -1,62 +1,55 @@
-/* Root layout: stack vertically instead of side-by-side */
 .sim-root {
   display: flex;
-  flex-direction: column;   /* top → bottom */
+  flex-direction: column;   
   gap: 16px;
   min-height: calc(100vh - 64px);
   padding: 12px;
   box-sizing: border-box;
 }
 
-/* BOTTOM: all the parameters / controls (used to be left) */
 .sim-left {
-  order: 2;  /* put this below the canvas */
+  order: 2;  
   overflow: auto;
   padding: 12px;
   border-radius: 12px;
   background: rgba(255,255,255,0.65);
   backdrop-filter: blur(6px);
-  flex: 1 1 auto;           /* take the remaining vertical space and scroll */
+  flex: 1 1 auto;           
 }
 
-/* TOP: simulation canvas (used to be right) */
 .sim-right {
-  order: 1;                 /* put this above the controls */
+  order: 1;                 
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
-  flex: 0 0 auto;           /* size to fit content */
+  flex: 0 0 auto;           
 }
 
 .sim-canvas {
   width: 100%;
-  max-height: calc(100vh - 140px);  /* you can tweak this if you want it taller/shorter */
+  max-height: calc(100vh - 140px);  
   border-radius: 12px;
   border: 1px solid rgba(0,0,0,0.08);
   background: #fffbe6;
 }
 
-/* Keep inputs from overflowing now that the panel is full-width */
 .sim-left input,
 .sim-left select,
 .sim-left textarea {
   max-width: 100%;
 }
    
-/* Multi-column layout for Scenario / Environment controls */
 .env-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px 16px;
 }
 
-/* Full-width row (zoom slider) */
 .env-grid .env-wide {
   grid-column: 1 / -1;
 }
 
-/* --- Randomize table --------------------------------------------------- */
 .rand-head {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) 120px 120px 60px;
@@ -75,18 +68,18 @@
   margin: 6px 0;
 }
 
-/* make sure number inputs fill their grid cells */
+
 .rand-row input[type="number"] {
   width: 100%;
 }
-/* Generic page container used by Simulator sub-pages */
+
 .page {
   max-width: 1200px;
   margin: 0 auto;
   padding: 16px;
 }
 
-/* Card behind the forms, with slight blur for readability */
+
 .page-section {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
@@ -99,7 +92,7 @@
   margin: 0 0 12px 0;
 }
 
-/* Responsive multi-column form grid */
+
 .page-grid-3 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

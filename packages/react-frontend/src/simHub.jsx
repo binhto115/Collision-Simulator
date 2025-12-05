@@ -1,4 +1,3 @@
-// src/simHub.jsx
 import React, { useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation} from "react-router-dom";
 
@@ -9,21 +8,16 @@ export default function SimHub({ setToken }) {
   const email = location.state?.email;
 
   function handleLogout() {
-    // Clear both tokens
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
 
-    // Clear token in REACT state
     setToken("INVALID_TOKEN");
     
-    // Go  back to login page
     navigate("/", { replace: true });
   }
 
-  // If no email in current state, user didn't come from login page. Send them back to login
   useEffect(() => {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      // If no token or invalid token on logout, then log out
       if (!token || token == "INVALID_TOKEN" || !email) {
       navigate("/", { replace: true});
     }

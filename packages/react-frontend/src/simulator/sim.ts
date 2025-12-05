@@ -13,7 +13,7 @@ export interface SimConfig {
   e: number;
   reactionDelayS: number;
   ttcTriggerS: number;
-  leadDecel1: number;          // constant braking command for L1 (negative m/s²)
+  leadDecel1: number;          
   fps: number;
   durationS: number;
 
@@ -65,7 +65,7 @@ export function applyCCRTemplate(cfg: SimConfig){
     cfg.vE0 = kph2mps(50); cfg.vL10 = kph2mps(50); cfg.vL20 = cfg.vL10;
     cfg.gap1 = [12,40][Math.floor(Math.random()*2)];
     cfg.gap2 = cfg.gap1 + 10;
-    cfg.leadDecel1 = [-2.0, -6.0][Math.floor(Math.random()*2)]; // m/s² (negative)
+    cfg.leadDecel1 = [-2.0, -6.0][Math.floor(Math.random()*2)]; 
   }
 }
 
@@ -105,14 +105,14 @@ function resolveImpact1D(uA:number,uB:number,mA:number,mB:number,e:number){
 }
 
 export function stepOnce(state:SimState, cfg:SimConfig){
-  const s = state, dt = s.dt; // dt in seconds
+  const s = state, dt = s.dt; // dt in seconds!
 
   // Per-vehicle physics params
   const pE:PhysParams  = { ...s.phys, m: cfg.mE,  CdA: cfg.CdAE };
   const p1:PhysParams  = { ...s.phys, m: cfg.m1,  CdA: cfg.CdA1 };
   const p2:PhysParams  = { ...s.phys, m: cfg.m2,  CdA: cfg.CdA2 };
 
-  // TTC / ego AEB (center-to-center minus half-lengths)
+  // TTC/ego AEB
   const centerGap1 = s.x1 - s.xE;
   const centerGap2 = s.x2 - s.xE;
   let centerGapAhead = Infinity, relVAhead = 0, combLenAhead = 0;
@@ -120,10 +120,10 @@ export function stepOnce(state:SimState, cfg:SimConfig){
   if (cfg.cars>=3 && centerGap2 < centerGapAhead){ centerGapAhead = centerGap2; relVAhead = s.vE - s.v2; combLenAhead = (s.lenE + s.len2)/2; }
   const TTC = relVAhead>0 ? ((centerGapAhead - combLenAhead)/relVAhead) : Infinity;
 
-  // respect reaction delay; avoid instant full brake at t=0
+  // respect reaction delay and avoid instant full brake at t=0
   const brakeOnEgo = (s.t >= (cfg.reactionDelayS ?? 0)) && (TTC < cfg.ttcTriggerS);
 
-  // Ego with physics + AEB; clamp to non-negative velocity
+  // Ego with physics + AEB and clamp to non-negative velocity
   const stE = stepLongitudinal(s.vE, s.aE, dt, pE, brakeOnEgo);
   s.vE = Math.max(0, stE.vNext);
   s.aE = stE.aCmdNext;
@@ -131,24 +131,24 @@ export function stepOnce(state:SimState, cfg:SimConfig){
   // Lead behavior by CCR mode
   if (cfg.kind === "CCRb" && cfg.leadDecel1 < 0) {
     const st1 = stepLongitudinal(s.v1, cfg.leadDecel1, dt, p1, /*brakeOn=*/false);
-    s.v1 = Math.max(0, st1.vNext);           // no reverse for lead either
+    s.v1 = Math.max(0, st1.vNext);           
   } else if (cfg.kind === "CCRs") {
     s.v1 = 0;
   } else {
-    s.v1 = cfg.vL10;                          // CCRm/custom constant speed (m/s)
+    s.v1 = cfg.vL10;                      
   }
 
-  // Third vehicle: constant-speed for now
+  // Third vehicle that keep constant-speed for now
   if (cfg.cars >= 3) {
     s.v2 = Math.max(0, cfg.vL20);
   }
 
-  // Integrate positions (seconds)
+  // Integrate positions
   s.xE += s.vE * dt;
   s.x1 += s.v1 * dt;
   s.x2 += s.v2 * dt;
 
-  // Collision + 1D impact resolution
+  // Collision
   const eps = 1e-3;
   let iter=0, changed=false;
   do{
@@ -158,7 +158,7 @@ export function stepOnce(state:SimState, cfg:SimConfig){
       if (gap12 <= 0){
         const uA=s.v1, uB=s.v2, e = estimateE(cfg.e, Math.max(0,uA-uB));
         const out = resolveImpact1D(uA,uB,cfg.m1,cfg.m2,e);
-        s.v1 = Math.max(0, out.vA); s.v2 = Math.max(0, out.vB);  // ✅ no reverse after impact
+        s.v1 = Math.max(0, out.vA); s.v2 = Math.max(0, out.vB); 
         const mid = (s.x1 + s.x2)/2;
         const d  = (s.len1 + s.len2)/2 + eps;
         s.x1 = mid - d/2; s.x2 = mid + d/2;
@@ -171,7 +171,7 @@ export function stepOnce(state:SimState, cfg:SimConfig){
       if (gapE1 <= 0){
         const uA=s.vE, uB=s.v1, e = estimateE(cfg.e, Math.max(0,uA-uB));
         const out = resolveImpact1D(uA,uB,cfg.mE,cfg.m1,e);
-        s.vE = Math.max(0, out.vA); s.v1 = Math.max(0, out.vB);  // ✅ no reverse after impact
+        s.vE = Math.max(0, out.vA); s.v1 = Math.max(0, out.vB); 
         const mid = (s.xE + s.x1)/2;
         const d  = (s.lenE + s.len1)/2 + eps;
         s.xE = mid - d/2; s.x1 = mid + d/2;
@@ -181,7 +181,7 @@ export function stepOnce(state:SimState, cfg:SimConfig){
     }
   } while(changed && ++iter<3);
 
-  // Optional: keep world non-negative so ego can’t slip under the left panel
+
   s.xE = Math.max(0, s.xE);
 
   s.t += dt;

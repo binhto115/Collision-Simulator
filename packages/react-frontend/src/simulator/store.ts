@@ -2,23 +2,23 @@
 
 // Parameters that the physics actually uses for the three cars
 export type VehicleParams = {
-  // Masses (kg)
+  // Masses
   mE: number;
   m1: number;
   m2: number;
 
-  // Drag area (CdA, m²)
+  // Drag area
   CdAE: number;
   CdA1: number;
   CdA2: number;
 
-  // Vehicle lengths (m)
+  // Vehicle lengths
   lenE: number;
   len1: number;
   len2: number;
 };
 
-// Road / condition parameters used by the simulator
+// Road and condition parameters used by the simulator
 export type RoadParams = {
   surface: "asphalt" | "concrete" | "gravel" | "ice";
   waterFilm_mm: number;
@@ -38,7 +38,6 @@ type SimStore = {
 };
 
 export const useSimStore = create<SimStore>((set) => ({
-  // Defaults chosen to match defaultCfg in LegacySim.tsx
   vehicle: {
     mE: 1500,
     m1: 1500,
