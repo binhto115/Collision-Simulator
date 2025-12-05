@@ -16,12 +16,14 @@ const ResetPasswordPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        
+        // If passwords don't match, then alert and return
         if (password !== confirm) {
             alert("Passwords do not match!");
             return;
         }
 
+        // Fetch from backend, or waiting for backend to respond to confirm password
         try {
             const res = await fetch("https://crashlab-backend-cga7hqa8f6cbbage.westus3-01.azurewebsites.net/accounts/reset-password", {
             // const res = await fetch("http://localhost:5000/accounts/reset-password",{
@@ -45,6 +47,7 @@ const ResetPasswordPage = () => {
     };
 
     return (
+        // Returning the page constantly
         <div className="reset-password-page">
             <form onSubmit={handleSubmit}>
                 <h2>Reset Password</h2>
