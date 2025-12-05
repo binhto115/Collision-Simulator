@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 export default defineConfig([
     globalIgnores(["dist"]),
     {
-        files: ["**/*.test.{js,jsx,ts,tsx}"],
+        files: ["**/*.{js,jsx,ts,tsx}"],
         extends: [
             js.configs.recommended,
             reactHooks.configs["recommended-latest"],
