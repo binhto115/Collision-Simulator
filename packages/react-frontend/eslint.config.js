@@ -6,7 +6,6 @@ import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
     globalIgnores(["dist"]),
-
     {
         files: ["**/*.{js,jsx,ts,tsx}"],
         extends: [
@@ -25,20 +24,6 @@ export default defineConfig([
         },
         rules: {
             "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Z_]" }],
-        },
-    },
-    {
-        files: [
-            "**/*.test.js",
-            "**/*.test.jsx",
-            "**/*.test.ts",
-            "**/*.test.tsx",
-            "**/__tests__/**/*.{js,jsx,ts,tsx}",
-        ],
-        languageOptions: {
-            globals: {
-                ...globals.jest,
-            },
         },
     },
 ]);
