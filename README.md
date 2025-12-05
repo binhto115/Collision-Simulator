@@ -1,6 +1,7 @@
 # Collision-Simulator
 
-## Contributing
+## Website Description
+A 2D multi-vehicle collision simulator. This website is meant for students and researchers to design, visualize, and simulate how different vehicle parameters and factors affect collisions on the road. Factors range from brake calibrations, environment factors, and vehicle speeds to given intended scenarios.
 
 ### To run the website
 
