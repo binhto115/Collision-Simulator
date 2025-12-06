@@ -25,10 +25,7 @@ Last Updated: October 30th, 2025
 ## Sequence Diagrams (Image)
 
 Below is our access-control flow sketch (login, signup, protected calls).
-- Original Sequence Diagram
 - [Original Sequence Diagram](docs/Original_Sequence_Diagram.md)
-
-- Final Sequence Diagram
 - [Final Sequence Diagram](docs/Final_Sequence_Diagram.md)
 
 ---
