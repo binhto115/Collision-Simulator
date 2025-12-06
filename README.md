@@ -13,6 +13,11 @@ Last Updated: October 30th, 2025
 
 ---
 
+## UML Diagram
+- [UML Class Diagram](docs/UML_Class_Diagram.md)
+
+---
+
 ## How to Run the Website
 * Git clone the repo
 * Open a terminal and **cd** into `packages/express-backend`
