@@ -2,12 +2,12 @@
 
 ## Website Description
 A 2D multi-vehicle collision simulator. This website is meant for students and researchers to design, visualize, and simulate how different vehicle parameters and factors affect collisions on the road. Factors range from brake calibrations, environment factors, and vehicle speeds to given intended scenarios.
-
+---
 ## UI Prototype
 ```bash
 https://www.figma.com/design/fy5n1BJaQzNLkniqjzL0Kq/Collision-sim?node-id=63-69&p=f&t=llZ3oDG6Yuiqnpdm-0
 ```
-
+---
 ### To run the website
 
 * Open a terminal and **cd** into `packages/express-backend`
@@ -145,6 +145,8 @@ curl -i http://localhost:8000/users \
 * **CORS errors** → Backend must allow origin `http://localhost:5173` and header `Authorization`.
 * **Mongo auth error** → Verify `MONGO_URI` username/password and DB name in `.env`.
 * **Mermaid not rendering on GitHub** → Each diagram must be in its **own** fenced block starting with ```mermaid.
+
+---
 
 ## How to run Jest Testing
 ```bash
