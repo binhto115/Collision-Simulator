@@ -13,8 +13,8 @@ Last Updated: October 30th, 2025
 
 ---
 
-### To run the website
-
+## How to Run the Website
+* Git clone the repo
 * Open a terminal and **cd** into `packages/express-backend`
 * Run: `npx nodemon backend.js`
 * Open another terminal and **cd** into `packages/react-frontend`
@@ -23,7 +23,6 @@ Last Updated: October 30th, 2025
 * Run: `npm run dev`
 
 **Before pushing**
-
 * Run **formatter**: `npm run format`
 * Run **linter**: `npm run lint`
 * Keep PRs small; use messages like `feat: add table` / `fix: delete bug`
