@@ -22,6 +22,17 @@ Last Updated: October 30th, 2025
 
 ---
 
+## Sequence Diagrams (Image)
+
+Below is our access-control flow sketch (login, signup, protected calls).
+- Original Sequence Diagram
+- [Original Sequence Diagram](docs/Original_Sequence_Diagram.md)
+
+- Final Sequence Diagram
+- [Final Sequence Diagram](docs/Final_Sequence_Diagram.md)
+
+---
+
 ## Test Coverage Report
 
 [View Coverage Report](packages/react-frontend/coverage/lcov-report/index.html)
@@ -107,14 +118,6 @@ Optional workspace settings (`.vscode/settings.json`):
 - **Env**:
   `TOKEN_SECRET` (JWT secret), `MONGO_URI` (Mongo connection string)
 
-### Sequence Diagrams (Image)
-
-Below is our access-control flow sketch (login, signup, protected calls).
-- Original Sequence Diagram
-- [Original Sequence Diagram](docs/Original Sequence_Diagram.md)
-
-- Final Sequence Diagram
-- [Final Sequence Diagram](docs/Final Sequence_Diagram.md)
 ## Backend Endpoints
 
 | Method | Path      | Auth? | Body                   | Response                      |
