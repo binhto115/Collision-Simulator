@@ -9,7 +9,10 @@ A 2D multi-vehicle collision simulator. This website is meant for students and r
 ```bash
 https://www.figma.com/design/fy5n1BJaQzNLkniqjzL0Kq/Collision-sim?node-id=63-69&p=f&t=llZ3oDG6Yuiqnpdm-0
 ```
+Last Updated: October 30th, 2025
+
 ---
+
 ### To run the website
 
 * Open a terminal and **cd** into `packages/express-backend`
