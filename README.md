@@ -38,6 +38,8 @@ https://www.figma.com/design/fy5n1BJaQzNLkniqjzL0Kq/Collision-sim?node-id=63-69&
 * **Prettier** formats everything (semicolons on, 2 spaces, width 100)
 * **ESLint** for basic JS/React rules
 
+---
+
 ### VS Code setup
 
 1. Install extensions: **Prettier – Code formatter**, **ESLint**
