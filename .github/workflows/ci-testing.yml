@@ -1,10 +1,10 @@
-name: CI Testing (work-at-9c0ee07)
+name: CI Testing (main)
 
 on:
   push:
-    branches: [work-at-9c0ee07]
+    branches: [main]
   pull_request:
-    branches: [work-at-9c0ee07]
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
