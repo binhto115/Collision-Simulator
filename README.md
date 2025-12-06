@@ -42,8 +42,7 @@ Last Updated: October 30th, 2025
 
 ---
 
-### VS Code setup
-
+## VS Code setup
 1. Install extensions: **Prettier – Code formatter**, **ESLint**
 2. Settings → enable **Format on Save**
 3. Set default formatter to **Prettier**
