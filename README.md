@@ -25,7 +25,12 @@ Last Updated: October 30th, 2025
 ## Test Coverage Report
 
 [View Coverage Report](packages/react-frontend/coverage/lcov-report/index.html)
-To view the report locally, open the file below in your browser:
+
+- To view the report locally, you can follow the following path:
+
+```bash
+./Collision-Simulator/packages/react-frontend/coverage/test_coverage_report.png
+```
 
 ---
 
