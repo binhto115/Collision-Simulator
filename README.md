@@ -159,7 +159,9 @@ curl -i http://localhost:8000/users \
 ---
 
 ## How to run Jest Testing
+```bash
 cd into ./Collision-Simulator/packages/react-frontend
+```
 ```bash
 npm test
 ```
